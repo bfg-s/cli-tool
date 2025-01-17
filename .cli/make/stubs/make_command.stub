@@ -1,0 +1,11 @@
+module.exports = class {className} extends process.Command {
+
+    name = '{command}';
+
+    description = '{description}';
+
+    async handle() {
+
+        // Your code here
+    }
+}
