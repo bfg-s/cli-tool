@@ -39,6 +39,38 @@ module.exports = class Git {
         return defaultValue;
     }
 
+    async getLastTag () {
+        const out = await this.command.signed_exec(`GIT: Getting a tag...`, `git tag --contains`, this.dir);
+        if (out.length) {
+            return this.command.obj.first(out)
+        }
+        return null;
+    }
+
+    async getLastVersion () {
+        const out = await this.command.signed_exec(`GIT: Get last version...`, `git describe --abbrev=0 --tags`, this.dir);
+        if (out.length) {
+            return this.command.obj.last(out);
+        }
+        return null;
+    }
+
+    async addTag (tagName, message) {
+        return await this.command.signed_exec(
+            `GIT: Creating a new tag [${tagName}][${message}]...`,
+            `git tag -a ${tagName} -m '${message}'`,
+            this.dir
+        );
+    }
+
+    async pushTag () {
+        return await this.command.signed_exec(
+            `GIT: Publish a new tag...`,
+            `git push --tag`,
+            this.dir
+        );
+    }
+
     async generateMessageForCommit () {
         const out = await this.command.signed_exec(`GIT: Get file list...`, `git diff --name-only`, this.dir);
         if (out.length) {
@@ -61,5 +93,21 @@ module.exports = class Git {
 
     async push (branch) {
         return await this.command.signed_exec(`GIT: [${branch}] Push...`, `git push ${this.remoteName} ${branch}`, this.dir);
+    }
+
+    async localeDropTag (tagName) {
+        return await this.command.signed_exec(
+            `GIT: Local drop tag...`,
+            `git tag -d ${tagName}`,
+            this.dir
+        );
+    }
+
+    async remoteDropTag (tagName) {
+        return await this.command.signed_exec(
+            `GIT: Remote drop tag...`,
+            `git push --delete origin ${tagName}`,
+            this.dir
+        );
     }
 }

@@ -14,25 +14,26 @@ module.exports = class Tag extends process.Command {
 
     async handle() {
 
-        let dir = this.fs.base_path();
+        const dir = this.fs.base_path();
 
-        if (this.fs.is_dir(this.fs.base_path('.git'))) {
+        if (this.git.exists()) {
 
-            let out = await this.signed_exec(`GIT: Checking for the need to add a tag...`, `git tag --contains`, dir);
+            const tag = await this.git.getLastTag();
 
-            if (!out.length) {
+            if (! tag) {
 
-                let ans = await this.confirm(`GIT: Create a new tag?`);
+                const answerOnCreate = await this.confirm(`GIT: Create a new tag?`);
 
-                if (!ans) {
-
+                if (!answerOnCreate) {
                     this.warn(`GIT: Tag creation canceled!`);
                     return;
                 }
 
-                out = await this.signed_exec(`GIT: Get last version...`, `git describe --abbrev=0 --tags`, dir);
-                let ver = out.length ? this.obj.last(out) : '0.0.1';
-                if (out.length) {
+                const lastVersion = await this.git.getLastVersion();
+
+                let ver = lastVersion ? lastVersion : '0.0.1';
+
+                if (lastVersion) {
                     this.success(`GIT: Found last version [${ver}]`);
                     ver = ver.split('.');
                     ver[this.obj.last_key(ver)] =
@@ -51,17 +52,9 @@ module.exports = class Tag extends process.Command {
                     `New version ${ver}`
                 );
 
-                await this.signed_exec(
-                    `GIT: Creating a new tag [${ver}][${message}]...`,
-                    `git tag -a ${ver} -m '${message}'`,
-                    dir
-                );
+                await this.git.addTag(ver, message);
 
-                await this.signed_exec(
-                    `GIT: Publish a new tag...`,
-                    `git push --tag`,
-                    dir
-                );
+                await this.git.pushTag();
 
                 if (this.option.publish) {
 
@@ -77,7 +70,7 @@ module.exports = class Tag extends process.Command {
 
             else {
 
-                this.warn(`GIT: The tag already exists [${this.obj.first(out)}]`);
+                this.warn(`GIT: The tag already exists [${tag}]`);
             }
 
         } else {
