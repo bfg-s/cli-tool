@@ -10,8 +10,8 @@ const tmpPath = path.join(process.env.TMPDIR, rootDirName);
 
 const Scanner = require('./scanner');
 const ProgramClass = require('./program');
-ProgramClass.log('running...');
-ProgramClass.log('load config...');
+ProgramClass.log('Running...');
+ProgramClass.log('Load config...');
 const Config = (require('./config'))
     .load(toolPath + '.json', 'tool')
     .load(homePath + '.json', 'home')
