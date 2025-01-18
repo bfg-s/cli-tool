@@ -4,6 +4,8 @@ const ParentCommand = require('./command');
 const {execSync} = require("child_process");
 const path = require('path');
 const CommandParent = require('./command');
+const fs = require('fs');
+const os = require('os');
 const colors = require('colors');
 const readline = require('readline');
 const rl = readline.createInterface({input: process.stdin, output: process.stdout});
@@ -113,7 +115,8 @@ module.exports = class Program {
 
         cmd
             .option('-q, --quiet', 'Disable output messages')
-            .option('-v, --verbose', 'Enable verbose mode');
+            .option('-v, --verbose', 'Enable verbose mode')
+            .option('-a, --alias <alias>', 'Add alias for command');
 
         cmd.action(async (...args) => {
             await this._defaultAction(args, command, cmd);
@@ -134,27 +137,65 @@ module.exports = class Program {
 
     async _defaultAction (args, command, cmd) {
 
-        this.log('Command action started...');
-
         const options = cmd.opts();
-        const keys = Object.keys(options);
-        for (const key of keys) {
-            command.option[key] = options[key];
-        }
-        const keysArgs = Object.keys(command.arg);
-        let index = 0;
-        for (const argument of keysArgs) {
-            command.arg[argument] = cmd.args[index] !== undefined ? cmd.args[index] : command.arg[argument];
-            index++;
-        }
 
-        await command.handle.bind(command)(...args);
+        if (options.alias) {
+
+            this._addAlias(options.alias, cmd._name);
+
+        } else {
+
+            this.log('Command action started...');
+
+            const keys = Object.keys(options);
+            for (const key of keys) {
+                command.option[key] = options[key];
+            }
+            const keysArgs = Object.keys(command.arg);
+            let index = 0;
+            for (const argument of keysArgs) {
+                command.arg[argument] = cmd.args[index] !== undefined ? cmd.args[index] : command.arg[argument];
+                index++;
+            }
+
+            await command.handle.bind(command)(...args);
+        }
 
         const elapsed = Date.now() - this.startTime;
         this.log('Finished.');
         this.log(`Total time: ${elapsed} ms`);
 
         command.exit();
+    }
+
+    _addAlias(alias, command) {
+        const shell = process.env.SHELL || '';
+        let rcFile;
+
+        if (shell.includes('zsh')) {
+            rcFile = path.join(os.homedir(), '.zshrc');
+        } else if (shell.includes('bash')) {
+            rcFile = path.join(os.homedir(), '.bashrc');
+        } else {
+            rcFile = path.join(os.homedir(), '.profile');
+        }
+
+        const aliasCommand = `alias ${alias}='cli ${command}'`;
+
+        if (fs.existsSync(rcFile)) {
+            const content = fs.readFileSync(rcFile, 'utf8');
+            if (content.includes(aliasCommand)) {
+                console.log(`Alias "${alias}" already exists in ${rcFile}.`);
+                return;
+            }
+        }
+
+        fs.appendFileSync(rcFile, `\n${aliasCommand}\n`);
+        console.log(`Alias "${alias}" added in ${rcFile}.`);
+
+        console.log(
+            `Please, run command: ${colors.green(`source ${rcFile}`)} for apply changes.`
+        );
     }
 
     _requireForce(module) {

@@ -2,10 +2,11 @@
 
 const startTime = Date.now();
 const path = require('path');
+const os = require('os');
 const rootDirName = '.cli';
 const currentPath = path.join(process.cwd(), rootDirName);
 const toolPath = path.join((process.main ? process.main : process.mainModule).path, rootDirName);
-const homePath = path.join(process.env.HOME, rootDirName);
+const homePath = path.join(os.homedir(), rootDirName);
 const tmpPath = path.join(process.env.TMPDIR, rootDirName);
 
 const Scanner = require('./scanner');

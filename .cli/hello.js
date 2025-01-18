@@ -6,8 +6,6 @@ module.exports = class Hello extends process.Command {
 
     handle() {
 
-        console.log(this.config.getNpmGlobalHash());
-
-        //this.info('Hello');
+        this.info('Hello');
     }
 }
