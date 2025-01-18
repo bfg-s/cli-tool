@@ -1,4 +1,15 @@
+const md5 = require('md5');
+
 module.exports = class Str {
+
+    /**
+     * MD5 hash
+     * @param str
+     * @returns {*}
+     */
+    md5 (str) {
+        return md5(str);
+    }
 
     /**
      * Convert html text to nodes

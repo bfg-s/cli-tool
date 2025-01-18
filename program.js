@@ -7,7 +7,7 @@ const CommandParent = require('./command');
 const colors = require('colors');
 const readline = require('readline');
 const rl = readline.createInterface({input: process.stdin, output: process.stdout});
-const argsInline = process.argv.join(" ");
+const argsInline = process.argv.join(" ") + " ";
 
 let lastLogTime = Date.now();
 
@@ -32,6 +32,15 @@ module.exports = class Program {
         process.cliPaths = {toolPath, homePath, currentPath, tmpPath};
 
         colors.enable();
+
+        if (
+            ! this.config.has(this.config.NPM_GLOBAL_HASH)
+            || this.config.getNpmGlobalHash(true) !== this.config.getNpmGlobalHash()
+        ) {
+
+            this.config.updateGlobalHash();
+            this.config.updateIncludedPaths();
+        }
 
         rl.on('SIGINT', () => {
             process.exit();
@@ -142,8 +151,8 @@ module.exports = class Program {
         await command.handle.bind(command)(...args);
 
         const elapsed = Date.now() - this.startTime;
-        this.log(`Total time: ${elapsed} ms`);
         this.log('Finished.');
+        this.log(`Total time: ${elapsed} ms`);
 
         command.exit();
     }
@@ -151,12 +160,7 @@ module.exports = class Program {
     _requireForce(module) {
 
         if (! this.globalPath) {
-            this.globalPath = this.config.get(`npm.global.${process.version}`, () => {
-                return this.config.setToStore('tmp', `npm.global.${process.version}`, () => {
-                    this.log('Search global path for npm modules...');
-                    return execSync(`npm root -g`).toString().trim();
-                });
-            });
+            this.globalPath = this.config.getNpmGlobalPath();
         }
 
         const modulePath = path.join(this.globalPath, module);
@@ -197,11 +201,11 @@ module.exports = class Program {
     }
 
     static isVerbose() {
-        return argsInline.includes("-v") || argsInline.includes("--verbose");
+        return argsInline.includes(" -v ") || argsInline.includes(" --verbose ");
     }
 
     static isQuiet() {
-        return argsInline.includes("-q") || argsInline.includes("--quiet");
+        return argsInline.includes(" -q ") || argsInline.includes(" --quiet ");
     }
 
     run() {
