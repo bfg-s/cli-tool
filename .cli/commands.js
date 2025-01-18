@@ -16,7 +16,7 @@ module.exports = class Commands extends process.Command {
 
         if (! this.option.inlined) {
 
-            let commands = this.programm.commands.map(cmd => {
+            let commands = this.program.commands.map(cmd => {
                 return [cmd._name, cmd._description];
             });
 
@@ -26,7 +26,7 @@ module.exports = class Commands extends process.Command {
         } else {
 
             this.line(
-                this.programm.commands.map(cmd => {
+                this.program.commands.map(cmd => {
                     return cmd._name;
                 }).join(' ')
             );

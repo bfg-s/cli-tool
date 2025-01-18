@@ -101,15 +101,22 @@ module.exports = class Fs {
         return '';
     }
 
-    get_json_contents (file) {
+    get_json_contents (file, defaultJson = []) {
         if (Array.isArray(file)) file = path.join(...file);
-        let json = [];
+        let json = defaultJson;
         if (this.is_file(file)) {
             try {json = JSON.parse(this.get_contents(file));} catch (e) {
-                json = []
+                json = defaultJson;
             }
         }
         return json;
+    }
+
+    update_json (file, key, value) {
+        if (Array.isArray(file)) file = path.join(...file);
+        let data = this.get_json_contents(file, {});
+        data[key] = value;
+        this.put_contents(file, JSON.stringify(data, null, 4));
     }
 
     pathinfo(path, options) {

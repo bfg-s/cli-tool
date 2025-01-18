@@ -6,6 +6,8 @@ module.exports = class Hello extends process.Command {
 
     handle() {
 
+        console.log(this.config);
+
         this.info('Hello');
     }
 }

@@ -11,6 +11,8 @@ const str = require('./helpers/str');
 const num = require('./helpers/num');
 const git = require('./helpers/git');
 
+const PhpBuilder = require('bfg-js-comcode');
+
 function promiseFromChildProcess(child, out = []) {
     return new Promise(function (resolve, reject) {
         child.addListener("error", reject);
@@ -60,15 +62,16 @@ module.exports = class Command {
     }
 
     get verbose() {
-        return this.programm.opts().verbose;
+        return this.program.opts().verbose;
     }
 
     get quiet() {
-        return this.programm.opts().quiet;
+        return this.program.opts().quiet;
     }
 
-    constructor(programm, commandFile, commandFindPath) {
-        this.programm = programm;
+    constructor(program, config, commandFile, commandFindPath) {
+        this.program = program;
+        this.config = config;
         this.pwd = process.cwd();
         this.path = path;
         this.moment = moment;
@@ -108,6 +111,10 @@ module.exports = class Command {
             file,
             this.stub(stub, params)
         );
+    }
+
+    phpBuilder (file) {
+        return new PhpBuilder(file);
     }
 
     success (text) {

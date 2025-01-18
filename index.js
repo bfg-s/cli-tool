@@ -1,36 +1,39 @@
 #!/usr/bin/env node
 
-const os = require('os');
-const ProgramClass = require('./program');
 const path = require('path');
-const Command = require('./command');
-const scanner = require('./scanner');
 const rootDirName = '.cli';
 const currentPath = path.join(process.cwd(), rootDirName);
 const toolPath = path.join((process.main ? process.main : process.mainModule).path, rootDirName);
 const homePath = path.join(process.env.HOME, rootDirName);
-const Program = new ProgramClass();
-const colors = require('colors');
-const readline = require('readline');
-const rl = readline.createInterface({input: process.stdin, output: process.stdout});
 
-process.Command = Command;
-process.cliPaths = {currentPath, toolPath, homePath};
-
-colors.enable();
-
-rl.on('SIGINT', () => {
-    process.exit();
-});
-
+const Scanner = require('./scanner');
+const ProgramClass = require('./program');
+ProgramClass.log('CLI tool is running...');
+ProgramClass.log('CLI tool load config...');
+const Config = (require('./config'))
+    .load(toolPath + '.json')
+    .load(homePath + '.json')
+    .load(currentPath + '.json');
+ProgramClass.log('CLI tool config loaded...');
+const Program = new ProgramClass(Config);
+Program.log('CLI tool prepare...');
+Program.prepare(toolPath, homePath, currentPath);
+Program.log('CLI tool prepare done...');
 (async () => {
-    const currentPathCommands = await scanner(currentPath);
-    const toolPathCommands = await scanner(toolPath);
-    const homePathCommands = await scanner(homePath);
-
+    Program.log('CLI tool scan current path...');
+    const currentPathCommands = await Scanner.findJsFilesWithClass(currentPath);
+    Program.log('CLI tool scan tool path...');
+    const toolPathCommands = await Scanner.findJsFilesWithClass(toolPath);
+    Program.log('CLI tool scan home path...');
+    const homePathCommands = await Scanner.findJsFilesWithClass(homePath);
+    Program.log('CLI tool scan done...');
+    Program.log('CLI tool apply commands to tool path...');
     Program.applyCommands(toolPathCommands, toolPath);
+    Program.log('CLI tool apply commands to home path...');
     Program.applyCommands(homePathCommands, homePath);
+    Program.log('CLI tool apply commands to current path...');
     Program.applyCommands(currentPathCommands, currentPath);
+    Program.log('CLI tool apply commands done...');
 
     Program.run();
 })();

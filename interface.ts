@@ -5,7 +5,11 @@ export interface Command {
         join: (...paths: string[]) => string;
     };
     pwd: string;
-    programm: Programm;
+    program: Program;
+    config: {
+        get: (key: string, defaultValue: any) => any;
+        set: (key: string, value: any) => void;
+    },
     fs: {
         copy: (src: string, dest: string) => void;
         statistic: (path: string) => {};
@@ -23,7 +27,8 @@ export interface Command {
         put_contents: (file: string, content: string) => void;
         append_contents: (path: string, data: string, options?: {}) => void;
         get_contents: (file: string) => string;
-        get_json_contents: (file: string) => any[];
+        get_json_contents: (file: string, defaultJson: any) => any;
+        update_json: (file: string, key: string, value: any) => void;
         pathinfo: (path: string, options: string|number) => any;
         basename: (path: string, suffix?: string) => string;
         path: (...paths: string[]) => string;
@@ -75,6 +80,7 @@ export interface Command {
     num: {
         isNumber: (num: any) => boolean;
     };
+    git: Git;
 
     commandFile: string;
     commandFilePath: string;
@@ -89,6 +95,8 @@ export interface Command {
     required: object;
     verbose: boolean;
     quiet: boolean;
+
+    phpBuilder (file: string): PhpBuilder;
 
     stub (stub: string, params: object): string;
     put_stub (file: string, stub: string, params: object): Promise<void>;
@@ -111,6 +119,64 @@ export interface Command {
     exit (message: string, code: number): void;
     line (...data: any[]): this;
     log (text: string, verbose: number): this;
+}
+
+declare interface Git {
+    changeDir (dir: string): Git;
+    changeRemoteName (remoteName: string): Git;
+    exists (): boolean;
+    existsForCommit (): Promise<boolean>;
+    getCurrentBranch (): Promise<string>;
+    getLastCommitMessage (defaultValue?: string): Promise<string>;
+    getLastTag (): Promise<string|null>;
+    getLastVersion (): Promise<string|null>;
+    addTag (tagName: string, message: string): Promise<void>;
+    pushTag (): Promise<void>;
+    generateMessageForCommit (): Promise<string>;
+    pull (branch: string): Promise<void>;
+    add (branch: string): Promise<void>;
+    commit (branch: string, comment: string): Promise<void>;
+    push (branch: string): Promise<void>;
+    localeDropTag (tagName: string): Promise<void>;
+    remoteDropTag (tagName: string): Promise<void>;
+}
+
+declare interface PhpBuilder {
+    constructor (file: string): PhpBuilder;
+    namespace (name: string): PhpBuilder;
+    use (name: string): PhpBuilder;
+    deleteUse (name: string): PhpBuilder;
+    class (name?: string): PhpBuilder;
+    anonymous (value?: boolean): PhpBuilder;
+    abstract (value?: boolean): PhpBuilder;
+    final (value?: boolean): PhpBuilder;
+    readonly (value?: boolean): PhpBuilder;
+    extends (extendsClass: string): PhpBuilder;
+    implements (implementsClass: string): PhpBuilder;
+    attribute (attributeName: string, ...args: any[]): PhpBuilder;
+    trait (traitName: string): PhpBuilder;
+    constant (name: string, value: any): PhpBuilder;
+    publicConstant (name: string, value: any): PhpBuilder;
+    protectedConstant (name: string, value: any): PhpBuilder;
+    privateConstant (name: string, value: any): PhpBuilder;
+    publicProperty (name: string, value?: any, comment?: string): PhpBuilder;
+    protectedProperty (name: string, value?: any, comment?: string): PhpBuilder;
+    privateProperty (name: string, value?: any, comment?: string): PhpBuilder;
+    staticPublicProperty (name: string, value?: any, comment?: string): PhpBuilder;
+    staticProtectedProperty (name: string, value?: any, comment?: string): PhpBuilder;
+    staticPrivateProperty (name: string, value?: any, comment?: string): PhpBuilder;
+    publicMethod (name: string, body?: string, comment?: string, type?: string): PhpBuilder;
+    protectedMethod (name: string, body?: string, comment?: string, type?: string): PhpBuilder;
+    privateMethod (name: string, body?: string, comment?: string, type?: string): PhpBuilder;
+    staticPublicMethod (name: string, body?: string, comment?: string, type?: string): PhpBuilder;
+    staticProtectedMethod (name: string, body?: string, comment?: string, type?: string): PhpBuilder;
+    staticPrivateMethod (name: string, body?: string, comment?: string, type?: string): PhpBuilder;
+    countOfMethods (): number;
+    countOfProperties (): number;
+    countOfConstants (): number;
+    isExistsMethod (name: string): boolean;
+    isExistsProperty (name: string): boolean;
+    save (): Promise<void>;
 }
 
 declare namespace loading {
@@ -188,13 +254,13 @@ declare const loading: {
     (options?: loading.Options | string): loading.Loading;
 }
 
-export interface Programm {
+export interface Program {
     args: string[];
     processedArgs: any[];
-    readonly commands: readonly Programm[];
+    readonly commands: readonly Program[];
     readonly options: readonly Option[];
     readonly registeredArguments: readonly Argument[];
-    parent: Programm | null;
+    parent: Program | null;
 
     constructor(name?: string): any;
 
@@ -266,7 +332,7 @@ export interface Programm {
      * See .command() for creating an attached subcommand, which uses this routine to
      * create the command. You can override createCommand to customise subcommands.
      */
-    createCommand(name?: string): Programm;
+    createCommand(name?: string): Program;
 
     /**
      * Add a prepared subcommand.
@@ -275,7 +341,7 @@ export interface Programm {
      *
      * @returns `this` command for chaining
      */
-    addCommand(cmd: Programm, opts?: CommandOptions): this;
+    addCommand(cmd: Program, opts?: CommandOptions): this;
 
     /**
      * Factory routine to create a new unattached argument.
@@ -345,7 +411,7 @@ export interface Programm {
     /**
      * Add prepared custom help command.
      */
-    addHelpCommand(cmd: Programm): this;
+    addHelpCommand(cmd: Program): this;
     /** @deprecated since v12, instead use helpCommand */
     addHelpCommand(nameAndArgs: string, description?: string): this;
     /** @deprecated since v12, instead use helpCommand */
@@ -357,8 +423,8 @@ export interface Programm {
     hook(
         event: HookEvent,
         listener: (
-            thisCommand: Programm,
-            actionCommand: Programm,
+            thisCommand: Program,
+            actionCommand: Program,
         ) => void | Promise<void>,
     ): this;
 
@@ -411,7 +477,7 @@ export interface Programm {
      *
      * (Used internally when adding a command using `.command()` so subcommands inherit parent settings.)
      */
-    copyInheritedSettings(sourceCommand: Programm): this;
+    copyInheritedSettings(sourceCommand: Program): this;
 
     /**
      * Display the help or a custom message after an error occurs.
@@ -926,9 +992,9 @@ export interface Help {
     }): void;
 
     /** Get the command term to show in the list of subcommands. */
-    subcommandTerm(cmd: Programm): string;
+    subcommandTerm(cmd: Program): string;
     /** Get the command summary to show in the list of subcommands. */
-    subcommandDescription(cmd: Programm): string;
+    subcommandDescription(cmd: Program): string;
     /** Get the option term to show in the list of options. */
     optionTerm(option: Option): string;
     /** Get the option description to show in the list of options. */
@@ -939,27 +1005,27 @@ export interface Help {
     argumentDescription(argument: Argument): string;
 
     /** Get the command usage to be displayed at the top of the built-in help. */
-    commandUsage(cmd: Programm): string;
+    commandUsage(cmd: Program): string;
     /** Get the description for the command. */
-    commandDescription(cmd: Programm): string;
+    commandDescription(cmd: Program): string;
 
     /** Get an array of the visible subcommands. Includes a placeholder for the implicit help command, if there is one. */
-    visibleCommands(cmd: Programm): Programm[];
+    visibleCommands(cmd: Program): Program[];
     /** Get an array of the visible options. Includes a placeholder for the implicit help option, if there is one. */
-    visibleOptions(cmd: Programm): Option[];
+    visibleOptions(cmd: Program): Option[];
     /** Get an array of the visible global options. (Not including help.) */
-    visibleGlobalOptions(cmd: Programm): Option[];
+    visibleGlobalOptions(cmd: Program): Option[];
     /** Get an array of the arguments which have descriptions. */
-    visibleArguments(cmd: Programm): Argument[];
+    visibleArguments(cmd: Program): Argument[];
 
     /** Get the longest command term length. */
-    longestSubcommandTermLength(cmd: Programm, helper: Help): number;
+    longestSubcommandTermLength(cmd: Program, helper: Help): number;
     /** Get the longest option term length. */
-    longestOptionTermLength(cmd: Programm, helper: Help): number;
+    longestOptionTermLength(cmd: Program, helper: Help): number;
     /** Get the longest global option term length. */
-    longestGlobalOptionTermLength(cmd: Programm, helper: Help): number;
+    longestGlobalOptionTermLength(cmd: Program, helper: Help): number;
     /** Get the longest argument term length. */
-    longestArgumentTermLength(cmd: Programm, helper: Help): number;
+    longestArgumentTermLength(cmd: Program, helper: Help): number;
 
     /** Return display width of string, ignoring ANSI escape sequences. Used in padding and wrapping calculations. */
     displayWidth(str: string): number;
@@ -991,7 +1057,7 @@ export interface Help {
     styleArgumentText(str: string): string;
 
     /** Calculate the pad width from the maximum term length. */
-    padWidth(cmd: Programm, helper: Help): number;
+    padWidth(cmd: Program, helper: Help): number;
 
     /**
      * Wrap a string at whitespace, preserving existing line breaks.
@@ -1017,7 +1083,7 @@ export interface Help {
     ): string;
 
     /** Generate the built-in help text. */
-    formatHelp(cmd: Programm, helper: Help): string;
+    formatHelp(cmd: Program, helper: Help): string;
 }
 
 type LiteralUnion<LiteralType, BaseType extends string | number> =
