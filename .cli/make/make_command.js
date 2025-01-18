@@ -5,10 +5,10 @@ module.exports = class MakeCommand extends process.Command {
     description = 'Make new command';
 
     options = [
-        ['-c, --command <command-signature>', 'Command signature'],
+        ['-c, --command <command-signature>', 'Command name signature'],
         ['-d, --description <command-description>', 'Command description'],
         ['-f, --force', 'Overwrite existing command'],
-        ['-i, --interface', 'Create command interface'],
+        ['-i, --interface', 'Create command ".ts" interface'],
     ];
 
     arg = {
