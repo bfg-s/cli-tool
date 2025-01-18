@@ -95,11 +95,8 @@ module.exports = class Git {
 
     async push (branch) {
         //return await this.command.signed_exec(`GIT: [${branch}] Push...`, `git push ${this.remoteName} ${branch}`, this.dir);
-        //this.command.success(`GIT: [${branch}] Push...`);
-        const p = this.command.process(`GIT: [${branch}] Push...`).start();
-        const result = await this.command.spawn(`git`, ['push', this.remoteName, branch], this.dir);
-        p.succeed();
-        return result;
+        this.command.success(`GIT: [${branch}] Push...`);
+        return await this.command.spawn(`git`, ['push', this.remoteName, branch], this.dir);
     }
 
     async localeDropTag (tagName) {
