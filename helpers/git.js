@@ -93,6 +93,7 @@ module.exports = class Git {
 
     async push (branch) {
         //return await this.command.signed_exec(`GIT: [${branch}] Push...`, `git push ${this.remoteName} ${branch}`, this.dir);
+        this.command.success(`GIT: [${branch}] Push...`);
         return await this.command.spawn(`git`, ['push', this.remoteName, branch], this.dir);
     }
 
