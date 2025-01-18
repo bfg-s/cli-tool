@@ -9,8 +9,10 @@ const readline = require('readline');
 const rl = readline.createInterface({input: process.stdin, output: process.stdout});
 const argsInline = process.argv.join(" ");
 
+let lastLogTime = Date.now();
+
 module.exports = class Program {
-    constructor(config) {
+    constructor(config, startTime) {
         program
             .name('cli')
             .description('Bfg CLI tool for managing your projects')
@@ -22,11 +24,12 @@ module.exports = class Program {
 
         this.config = config;
         this.program = program;
+        this.startTime = startTime;
     }
 
-    prepare (toolPath, homePath, currentPath) {
+    prepare (toolPath, homePath, currentPath, tmpPath) {
         process.Command = CommandParent;
-        process.cliPaths = {toolPath, homePath, currentPath};
+        process.cliPaths = {toolPath, homePath, currentPath, tmpPath};
 
         colors.enable();
 
@@ -57,6 +60,8 @@ module.exports = class Program {
             return null;
         }
 
+        this.log(`Create command ${command.path}...`);
+
         command = new command.class(program, this.config, command.path, path);
 
         const requiredKeys = Object.keys(command.required);
@@ -74,6 +79,8 @@ module.exports = class Program {
         const requiredOption = command.requiredOptions;
         const options = command.options;
         const name = command.name;
+
+        this.log(`Setup command ${name}...`);
 
         this._deleteExistsCommand(name);
 
@@ -111,11 +118,14 @@ module.exports = class Program {
         );
 
         if (indexFindProgram !== -1) {
+            this.log(`Command ${name} already exists. Remove...`);
             program.commands.splice(indexFindProgram, 1);
         }
     }
 
     async _defaultAction (args, command, cmd) {
+
+        this.log('Command action started...');
 
         const options = cmd.opts();
         const keys = Object.keys(options);
@@ -131,27 +141,40 @@ module.exports = class Program {
 
         await command.handle.bind(command)(...args);
 
+        const elapsed = Date.now() - this.startTime;
+        this.log(`Total time: ${elapsed} ms`);
+        this.log('Finished.');
+
         command.exit();
     }
 
     _requireForce(module) {
 
         if (! this.globalPath) {
-
-            this.globalPath = execSync(`npm root -g`).toString().trim();
+            this.globalPath = this.config.get(`npm.global.${process.version}`, () => {
+                return this.config.setToStore('tmp', `npm.global.${process.version}`, () => {
+                    this.log('Search global path for npm modules...');
+                    return execSync(`npm root -g`).toString().trim();
+                });
+            });
         }
 
         const modulePath = path.join(this.globalPath, module);
 
         try {
-            return require(modulePath);
+            this.log(`Try to require module: ${module}`);
+            const result = require(modulePath);
+            this.log(`Module ${module} included.`);
+            return result;
         } catch (e) {
             if (e.code === 'MODULE_NOT_FOUND') {
+                this.log(`Module ${module} not found. Try to install...`);
                 execSync(`npm install -g ${module}`);
                 try {
+                    this.log(`Try to require module: ${module} again`);
                     return require(modulePath);
                 } catch (e) {
-
+                    this.log(`Module ${module} not found.`);
                 }
             }
         }
@@ -159,14 +182,17 @@ module.exports = class Program {
     }
 
     log(message) {
-        if (! this.constructor.isQuiet() && this.constructor.isVerbose()) {
-            console.log(message);
-        }
+        this.constructor.log(message);
     }
 
     static log(message) {
         if (! this.isQuiet() && this.isVerbose()) {
-            console.log(message);
+            const now = Date.now();
+            const elapsed = now - lastLogTime;
+
+            console.log(`[CLI][${elapsed} ms]`, message);
+
+            lastLogTime = now;
         }
     }
 

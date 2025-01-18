@@ -60,10 +60,11 @@ module.exports = class Obj {
      * Get by dots
      * @param str
      * @param obj
+     * @param defaultValue
      */
-    get (str, obj) {
+    get (str, obj, defaultValue = undefined) {
         return String(str).split('.').reduce((obj, i) => {
-            return obj[i] !== undefined ? obj[i] : undefined;
+            return obj && obj[i] !== undefined ? obj[i] : defaultValue;
         }, obj);
     }
 

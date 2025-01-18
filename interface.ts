@@ -40,7 +40,7 @@ export interface Command {
         get_element_attrs: (el: any) => object;
         observer: (target: any, events: any, revocable: boolean) => any;
         has: (str: string, obj: any) => any;
-        get: (str: string, obj: any) => any;
+        get: (str: string, obj: any, defaultValue: any) => any;
         set: (str: string, value: any, obj: any) => void;
         each: (target: any, callback: () => {}) => any;
         get_start_with: (target: any, start: string) => any;

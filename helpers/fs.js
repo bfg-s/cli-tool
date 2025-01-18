@@ -1,5 +1,7 @@
 const path = require('path');
 const fs = require('fs');
+const str = new (require('./str'));
+const obj = new (require('./obj'))({str});
 
 module.exports = class Fs {
 
@@ -101,12 +103,12 @@ module.exports = class Fs {
         return '';
     }
 
-    get_json_contents (file, defaultJson = []) {
+    get_json_contents (file, defaultJson) {
         if (Array.isArray(file)) file = path.join(...file);
-        let json = defaultJson;
+        let json = defaultJson ? defaultJson : [];
         if (this.is_file(file)) {
             try {json = JSON.parse(this.get_contents(file));} catch (e) {
-                json = defaultJson;
+                json = defaultJson ? defaultJson : [];
             }
         }
         return json;
@@ -114,8 +116,8 @@ module.exports = class Fs {
 
     update_json (file, key, value) {
         if (Array.isArray(file)) file = path.join(...file);
-        let data = this.get_json_contents(file, {});
-        data[key] = value;
+        const data = this.get_json_contents(file, {});
+        obj.set(key, value, data);
         this.put_contents(file, JSON.stringify(data, null, 4));
     }
 
