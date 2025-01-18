@@ -188,7 +188,7 @@ module.exports = class Str {
             .replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\#-]', 'g'), '\\$&')
             .replace(/\\\*/g, '.*');
 
-        return (new RegExp(pattern + '$', 'u')).test(text);
+        return (new RegExp(pattern + '$', 'um')).test(text);
     }
 
     /**

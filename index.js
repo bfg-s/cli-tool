@@ -11,12 +11,13 @@ const tmpPath = path.join(process.env.TMPDIR, rootDirName);
 const Scanner = require('./scanner');
 const ProgramClass = require('./program');
 ProgramClass.log('Running...');
-ProgramClass.log('Load config...');
-const Config = (require('./config'))
+ProgramClass.log('Load configs...');
+const Config = require('./config')
+    .setLog(ProgramClass)
     .load(toolPath + '.json', 'tool')
+    .load(tmpPath + '.json', 'tmp')
     .load(homePath + '.json', 'home')
-    .load(currentPath + '.json', 'current')
-    .load(tmpPath + '.json', 'tmp');
+    .load(currentPath + '.json', 'current');
 ProgramClass.log('Config loaded...');
 const Program = new ProgramClass(Config, startTime);
 Program.log('Prepare...');

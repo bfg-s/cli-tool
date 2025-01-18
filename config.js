@@ -8,7 +8,13 @@ module.exports = new class Config {
         this.store = {};
     }
 
+    setLog (program) {
+        this.log = program.log.bind(program);
+        return this;
+    }
+
     load (file, store = null) {
+        this.log('Loading config file: ' + file + '...');
         const dataInFile = fs.get_json_contents(file);
         if (store) {
             this.store[store] = file;

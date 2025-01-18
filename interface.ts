@@ -7,7 +7,7 @@ export interface Command {
     pwd: string;
     program: Program;
     config: {
-        get: (key: string, defaultValue: any) => any;
+        get: (key: string, defaultValue?: any) => any;
         set: (key: string, value: any) => void;
     },
     fs: {
@@ -27,7 +27,7 @@ export interface Command {
         put_contents: (file: string, content: string) => void;
         append_contents: (path: string, data: string, options?: {}) => void;
         get_contents: (file: string) => string;
-        get_json_contents: (file: string, defaultJson: any) => any;
+        get_json_contents: (file: string, defaultJson?: any) => any;
         update_json: (file: string, key: string, value: any) => void;
         pathinfo: (path: string, options: string|number) => any;
         basename: (path: string, suffix?: string) => string;
