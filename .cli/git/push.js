@@ -45,7 +45,7 @@ module.exports = class Push extends process.Command {
                 await this.git.commit(branch, comment);
                 await this.git.push(branch);
 
-                this.success(`GIT: [${branch}] Pushed on repository!`);
+                //this.success(`GIT: [${branch}] Pushed on repository!`);
             }
 
             else {
