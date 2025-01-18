@@ -185,10 +185,10 @@ module.exports = class Str {
     is (pattern, text) {
 
         pattern = pattern
-            .replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\#-]', 'g'), '\\$&')
+            .replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!>|:\\#]', 'g'), '\\$&')
             .replace(/\\\*/g, '.*');
 
-        return (new RegExp(pattern + '$', 'um')).test(text);
+        return (new RegExp('^' + pattern + '$', 'um')).test(text);
     }
 
     /**

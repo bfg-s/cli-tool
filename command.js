@@ -1,7 +1,7 @@
 const Table = require('cli-table3');
 const loading =  require('loading-cli');
 const prompts = require('prompts');
-const { exec } = require('child_process');
+const { exec, spawn } = require('child_process');
 const path = require('path');
 const moment = require('moment');
 const lodash = require('lodash');
@@ -135,7 +135,7 @@ module.exports = class Command {
     async signed_exec (title, command, dir = this.pwd) {
         command = Array.isArray(command) ? command.join(' ') : command;
         let out = [],
-            process = this.process({}).start(title);
+            process = this.process().start(title);
 
         try {
             await this.exec(command, out, dir);
@@ -150,6 +150,40 @@ module.exports = class Command {
     async exec (command, out = [], dir = this.pwd) {
         this.log(`Run cli command: ${command}`, 1);
         return await promiseFromChildProcess(exec(command, {cwd: dir}), out);
+    }
+
+    async spawn (command, args = [], dir = this.pwd) {
+        this.log(`Run cli command: ${command} ${args.join(' ')}`, 1);
+        return new Promise((resolve, reject) => {
+            const child = spawn(command, args, {stdio: 'inherit', cwd: dir});
+
+            let stdout = '';
+            let stderr = '';
+
+            if (child.stdout) {
+                child.stdout.on('data', (data) => {
+                    stdout += data.toString();
+                });
+            }
+
+            if (child.stderr) {
+                child.stderr.on('data', (data) => {
+                    stderr += data.toString();
+                });
+            }
+
+            child.on('close', (code) => {
+                if (code === 0) {
+                    resolve({ stdout, stderr });
+                } else {
+                    reject(new Error(`Process exited with code ${code}: ${stderr}`));
+                }
+            });
+
+            child.on('error', (err) => {
+                reject(err);
+            });
+        });
     }
 
     async cmd (command, dir = this.pwd) {
@@ -185,7 +219,7 @@ module.exports = class Command {
         return prompts(options);
     }
 
-    process (options) {
+    process (options = {}) {
         return loading(options)
     }
 

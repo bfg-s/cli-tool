@@ -1,28 +1,31 @@
 module.exports = class Find extends process.Command {
 
-    name = 'find <value>';
+    name = 'find <value> [file]';
 
-    description = 'Find';
+    description = 'Find in files or find files';
 
     options = [
-        ['-f, --file', 'Find file']
+        ['-f, --find-file', 'Find file']
     ];
 
     option = {
-        file: false
+        findFile: false
     };
 
     arg = {
-        value: null
+        value: null,
+        file: null
     };
 
-    handle() {
+    async handle() {
+
+        const startTime = Date.now();
 
         this.info('Searching...');
 
         let result = [];
 
-        if (this.option.file) {
+        if (this.option.findFile) {
 
             result = this.findFiles(this.arg.value);
 
@@ -31,9 +34,14 @@ module.exports = class Find extends process.Command {
             result = this.findInFiles(this.arg.value);
         }
 
-        if (! result.length) {
+        const endTime = Date.now();
+        const time = (endTime - startTime) / 1000;
+        this.success(`Time: ${time} sec`);
 
+        if (! result.length) {
             this.warn('Nothing found!');
+        } else {
+            this.success('Found results: ' + result.length);
         }
     }
 
@@ -64,13 +72,16 @@ module.exports = class Find extends process.Command {
         files.forEach((file) => {
             const relativePath = file.replace(dir + '/', '');
             if (
-                //content.includes(value)
                 !relativePath.startsWith('.git')
                 && !relativePath.startsWith('.idea')
                 && !relativePath.startsWith('node_modules')
                 && !relativePath.startsWith('vendor')
             ) {
                 const content = this.fs.get_contents(file);
+
+                if (this.arg.file && ! this.str.is(this.arg.file, relativePath)) {
+                    return ;
+                }
 
                 if (this.str.is(value, content)) {
 
