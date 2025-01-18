@@ -80,7 +80,9 @@ module.exports = class Git {
     }
 
     async pull (branch) {
-        return await this.command.signed_exec(`GIT: [${branch}] Pulling...`, `git pull ${this.remoteName} ${branch}`, this.dir);
+        //return await this.command.signed_exec(`GIT: [${branch}] Pulling...`, `git pull ${this.remoteName} ${branch}`, this.dir);
+        this.command.success(`GIT: [${branch}] Pulling...`);
+        return await this.command.spawn(`git`, ['pull', this.remoteName, branch], this.dir);
     }
 
     async add (branch) {
@@ -111,5 +113,15 @@ module.exports = class Git {
             `git push --delete origin ${tagName}`,
             this.dir
         );
+    }
+
+    async reset (mode = null) {
+
+        this.command.success(`GIT: Reset...`);
+        const options = ['reset'];
+        if (mode) {
+            options.push(`--${mode}`);
+        }
+        return await this.command.spawn(`git`, options, this.dir);
     }
 }

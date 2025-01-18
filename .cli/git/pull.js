@@ -12,8 +12,6 @@ module.exports = class Pull extends process.Command {
 
             await this.git.pull(branch);
 
-            this.success(`GIT: [${branch}] Pulled from repository!`);
-
         } else {
 
             this.error(`GIT: Not a git repository!`);
