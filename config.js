@@ -50,6 +50,11 @@ module.exports = new class Config {
         return obj.has(key, this.data);
     }
 
+    delete (key) {
+        obj.delete(key, this.data);
+        return this;
+    }
+
     setToStore (store, key, value) {
         const file = this.store[store];
         value = typeof value === 'function' ? value(this, key) : value;
@@ -58,6 +63,15 @@ module.exports = new class Config {
         }
         this.set(key, value);
         return value;
+    }
+
+    deleteFromStore (store, key) {
+        const file = this.store[store];
+        if (file) {
+            fs.delete_json_key(file, key);
+        }
+        this.delete(key);
+        return this;
     }
 
     getNpmGlobalPath () {

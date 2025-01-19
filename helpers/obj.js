@@ -94,6 +94,24 @@ module.exports = class Obj {
         });
     }
 
+    delete (str, obj) {
+        let levels = String(str).split('.');
+        let max_level = levels.length - 1;
+        let target = obj;
+        levels.some(function (level, i) {
+            if (typeof level === 'undefined') {
+                return true;
+            }
+            if (i === max_level) {
+                delete target[level];
+            } else {
+                let obj = target[level] || {};
+                target[level] = obj;
+                target = obj;
+            }
+        });
+    }
+
     /**
      * Each object or array
      * @param target

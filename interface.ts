@@ -26,6 +26,7 @@ export interface Command {
         get_contents: (file: string) => string;
         get_json_contents: (file: string, defaultJson?: any) => any;
         update_json: (file: string, key: string, value: any) => void;
+        delete_json_key: (file: string, key: string) => void;
         pathinfo: (path: string, options: string|number) => any;
         basename: (path: string, suffix?: string) => string;
         path: (...paths: string[]) => string;
@@ -39,6 +40,7 @@ export interface Command {
         has: (str: string, obj: any) => any;
         get: (str: string, obj: any, defaultValue: any) => any;
         set: (str: string, value: any, obj: any) => void;
+        delete: (str: string, obj: any) => void;
         each: (target: any, callback: () => {}) => any;
         get_start_with: (target: any, start: string) => any;
         get_end_with: (target: any, end: string) => any
@@ -124,6 +126,7 @@ declare interface Config {
     set (key: string, value: any): void;
     has (key: string): boolean;
     setToStore (store: string, key: string, value: any): any;
+    deleteFromStore (store: string, key: string): Config;
 }
 
 declare interface Git {

@@ -121,6 +121,13 @@ module.exports = class Fs {
         this.put_contents(file, JSON.stringify(data, null, 4));
     }
 
+    delete_json_key (file, key) {
+        if (Array.isArray(file)) file = path.join(...file);
+        const data = this.get_json_contents(file, {});
+        obj.delete(key, data);
+        this.put_contents(file, JSON.stringify(data, null, 4));
+    }
+
     pathinfo(path, options) {
         //  discuss at: http://phpjs.org/functions/pathinfo/
         // original by: Nate
