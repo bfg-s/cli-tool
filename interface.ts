@@ -103,7 +103,7 @@ export interface Command {
     signed_exec (title: string, command: string, dir: string): Promise<string[]>;
     exec (command: string, out: string[], dir: string): Promise<void>;
     cmd (command: string, dir: string): Promise<string[]>;
-    ask (question: string, defaultValue: string, validate: any): Promise<string>;
+    ask (question: string, defaultValue?: string, validate?: any): Promise<string>;
     confirm (message: string, defaultValue: boolean, active: string, inactive: string): Promise<boolean>;
     prompts (options: any): Promise<object>;
     process (options: loading.Options|string): loading.Loading;
