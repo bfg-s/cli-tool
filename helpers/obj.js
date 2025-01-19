@@ -53,7 +53,9 @@ module.exports = class Obj {
     }
 
     has (str, obj) {
-        return String(str).split('.').reduce((o,i)=>o ? o[i] : false, obj);
+        return String(str)
+            .split('.')
+            .reduce((o,i)=>o !== undefined ? o[i] : undefined, obj) !== undefined;
     }
 
     /**
