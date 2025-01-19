@@ -74,12 +74,6 @@ module.exports = class Program {
 
         command = new command.class(program, this.config, command.path, path);
 
-        const requiredKeys = Object.keys(command.required);
-
-        for (const key of requiredKeys) {
-            command[key] = this._requireForce(command.required[key]);
-        }
-
         return command;
     }
 
@@ -118,6 +112,13 @@ module.exports = class Program {
             .option('-a, --alias <alias>', 'Add alias for command');
 
         cmd.action(async (...args) => {
+
+            const requiredKeys = Object.keys(command.required);
+
+            for (const key of requiredKeys) {
+                command[key] = this._requireForce(command.required[key]);
+            }
+
             await this._defaultAction(args, command, cmd);
         });
     }

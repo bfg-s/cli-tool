@@ -6,10 +6,7 @@ export interface Command {
     };
     pwd: string;
     program: Program;
-    config: {
-        get: (key: string, defaultValue?: any) => any;
-        set: (key: string, value: any) => void;
-    },
+    config: Config,
     fs: {
         copy: (src: string, dest: string) => void;
         statistic: (path: string) => {};
@@ -119,6 +116,14 @@ export interface Command {
     exit (message: string, code: number): void;
     line (...data: any[]): this;
     log (text: string, verbose: number): this;
+}
+
+declare interface Config {
+    load (file: string, store?: string): Config;
+    get (key: string, defaultValue?: any): any;
+    set (key: string, value: any): void;
+    has (key: string): boolean;
+    setToStore (store: string, key: string, value: any): any;
 }
 
 declare interface Git {
