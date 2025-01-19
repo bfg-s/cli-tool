@@ -29,9 +29,8 @@ module.exports = class Program {
         this.startTime = startTime;
     }
 
-    prepare (toolPath, homePath, currentPath, tmpPath) {
+    prepare () {
         process.Command = CommandParent;
-        process.cliPaths = {toolPath, homePath, currentPath, tmpPath};
 
         colors.enable();
 

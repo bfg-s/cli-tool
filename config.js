@@ -88,7 +88,7 @@ module.exports = new class Config {
     updateIncludedPaths () {
         const globalPath = this.getNpmGlobalPath();
         const globalExtends = fs.read_dir(this.getNpmGlobalPath());
-        const rootDirName = this.get('root-dir-name');
+        const rootDirName = this.get('root.dir-name');
         const extendsDirs = [];
         for (const dir of globalExtends) {
             const path = fs.path(globalPath, dir, rootDirName);
