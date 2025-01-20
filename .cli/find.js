@@ -3,77 +3,64 @@ const path = require('path');
 
 module.exports = class Find extends process.Command {
 
-    name = 'find <value> [file]';
+    name = 'find [value]';
 
     description = 'Find in files or find files';
 
     options = [
-        ['-f, --find-file', 'Find file']
+        ['-f, --file <file>', 'Select file mask to search'],
     ];
 
     option = {
-        findFile: false
+        file: null,
     };
 
     arg = {
         value: null,
-        file: null
     };
+
+    matches = 0;
+
+    fileNums = 0;
 
     async handle() {
 
-        const startTime = Date.now();
-
-        this.info('Searching...');
-
         let result = [];
 
-        if (this.option.findFile && ! this.arg.file) {
+        if (this.option.file && ! this.arg.value) {
 
-            result = await this.findFiles(this.arg.value);
+            result = await this.findFiles(this.option.file);
 
         } else {
 
             result = await this.findInFiles(this.arg.value);
+            this.info(`Matches: `.green + this.matches);
         }
-
-        const endTime = Date.now();
-        const time = (endTime - startTime) / 1000;
-        this.success(`Time: ${time} sec`);
 
         if (! result.length) {
             this.warn('Nothing found!');
         } else {
-            this.success('Found results: ' + result.length);
+            this.line('Files: '.green + result.length);
         }
+
+        const endTime = Date.now();
+        const time = (endTime - this.program.startTime) / 1000;
+        this.info(`Time: `.green + `${time} sec`);
     }
 
-    quote(str) {
-        return this.str.trim(String(str).replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!>|:\\#]', 'g'), '\\$&')
-            .replace(/\\\*/g, '|'), '|');
-    }
-
-    replaceToColor(str, value) {
-        if (! value) {
-            return str;
-        }
-        const reg = new RegExp(`(${value})`, 'g');
-        return String(str).replace(reg, (m) => m.yellow);
-    }
-
-    async findFiles(fileMask, succeed) {
+    async findFiles(fileMask) {
         const dir = this.fs.base_path();
-        const vals = this.quote(fileMask);
+        const searchInFile = this.quote(fileMask);
         return await this.read_all_dir_promise(dir, async (file) => {
-            const relativePath = file.replace(dir + '/', '');
+            const relativePath = file.replace(dir + path.sep, '');
             if (
-                this.str.is(fileMask, relativePath)
-                && !relativePath.startsWith('.git')
+                !relativePath.startsWith('.git')
                 && !relativePath.startsWith('.idea')
                 && !relativePath.startsWith('node_modules')
                 && !relativePath.startsWith('vendor')
+                && this.str.is(fileMask, relativePath)
             ) {
-                this.info(this.replaceToColor(file, vals));
+                this.fileLine(file, searchInFile);
                 return true;
             }
             return false;
@@ -82,31 +69,41 @@ module.exports = class Find extends process.Command {
 
     async findInFiles(value) {
         const dir = this.fs.base_path();
-        const vals = this.quote(value);
+        const searchInContent = this.quote(value);
         return await this.read_all_dir_promise(dir, async (file) => {
-            const relativePath = file.replace(dir + '/', '');
+            const relativePath = file.replace(dir + path.sep, '');
             if (
                 !relativePath.startsWith('.git')
                 && !relativePath.startsWith('.idea')
                 && !relativePath.startsWith('node_modules')
                 && !relativePath.startsWith('vendor')
             ) {
-                let search = null;
-                if (this.arg.file && ! this.str.is(this.arg.file, relativePath)) {
+                let searchInFile = null;
+                if (this.option.file && ! this.str.is(this.option.file, relativePath)) {
                     return ;
-                } else if (this.arg.file) {
-                    search = this.quote(this.arg.file);
+                } else if (this.option.file) {
+                    searchInFile = this.quote(this.option.file);
                 }
                 return await this.readFileContentStream(file, (content) => {
 
                     if (this.str.is(value, content)) {
 
-                        this.info(this.replaceToColor(file, search));
+                        let lenFileLine = this.fileLine(file, searchInFile);
                         content.split('\n').forEach((line, n) => {
                             if (this.str.is(value, line)) {
-                                this.info(`[${n+1}]  ${this.replaceToColor(line, vals)}`);
+                                n++;
+                                const len = String(n).length;
+                                let minLen = 6;
+                                if (len > minLen) {minLen = 12;}
+                                if (len > minLen) {minLen = 18;}
+                                if (len > minLen) {minLen = 24;}
+                                const spacesLen = minLen - len;
+                                const spaces = ` `.repeat(spacesLen > 0 ? spacesLen : 1);
+                                const num = `[:${n}]`;
+                                this.line(num.green + spaces + `${this.replaceToColor(line, searchInContent, true)}`);
                             }
                         });
+                        this.line('-'.repeat(lenFileLine).blue);
                         return true;
                     }
                     return false;
@@ -156,6 +153,28 @@ module.exports = class Find extends process.Command {
             });
             stream.on('end', () => resolve(isTrue));
             stream.on('error', reject);
+        });
+    }
+
+    fileLine(file, search) {
+        const first = `[#${++this.fileNums}] `;
+        this.info(first.green + this.replaceToColor(file, search));
+        return String(first+file).length;
+    }
+
+    quote(str) {
+        return this.str.trim(String(str).replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!>|:\\#]', 'g'), '\\$&')
+            .replace(/\\\*/g, '|'), '|');
+    }
+
+    replaceToColor(str, value, countMatches = false) {
+        if (! value) {
+            return str;
+        }
+        const reg = new RegExp(`(${value})`, 'g');
+        return String(str).replace(reg, (m) => {
+            if (countMatches) this.matches++;
+            return m.yellow;
         });
     }
 }
