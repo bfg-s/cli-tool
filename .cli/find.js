@@ -53,6 +53,14 @@ module.exports = class Find extends process.Command {
             .replace(/\\\*/g, '|'), '|');
     }
 
+    replaceToColor(str, value) {
+        if (! value) {
+            return str;
+        }
+        const reg = new RegExp(`(${value})`, 'g');
+        return String(str).replace(reg, (m) => m.yellow);
+    }
+
     async findFiles(fileMask, succeed) {
         const dir = this.fs.base_path();
         const vals = this.quote(fileMask);
@@ -65,8 +73,7 @@ module.exports = class Find extends process.Command {
                 && !relativePath.startsWith('node_modules')
                 && !relativePath.startsWith('vendor')
             ) {
-                const reg = new RegExp(`(${vals})`, 'g');
-                this.info(file.replace(reg, (m) => m.yellow));
+                this.info(this.replaceToColor(file, vals));
                 return true;
             }
             return false;
@@ -94,16 +101,10 @@ module.exports = class Find extends process.Command {
 
                     if (this.str.is(value, content)) {
 
-                        if (search) {
-                            const reg = new RegExp(`(${search})`, 'g');
-                            this.info(file.replace(reg, (m) => m.yellow));
-                        } else {
-                            this.info(file);
-                        }
+                        this.info(this.replaceToColor(file, search));
                         content.split('\n').forEach((line, n) => {
                             if (this.str.is(value, line)) {
-                                const reg = new RegExp(`(${vals})`, 'g');
-                                this.info(`[${n+1}]  ${line.replace(reg, (m) => m.yellow)}`);
+                                this.info(`[${n+1}]  ${this.replaceToColor(line, vals)}`);
                             }
                         });
                         return true;
