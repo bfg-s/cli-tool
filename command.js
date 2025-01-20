@@ -62,15 +62,16 @@ module.exports = class Command {
     }
 
     get verbose() {
-        return this.program.opts().verbose;
+        return this.commander.opts().verbose;
     }
 
     get quiet() {
-        return this.program.opts().quiet;
+        return this.commander.opts().quiet;
     }
 
-    constructor(program, config, commandFile, commandFindPath) {
+    constructor(program, commander, config, commandFile, commandFindPath) {
         this.program = program;
+        this.commander = commander;
         this.config = config;
         this.pwd = process.cwd();
         this.path = path;
@@ -280,10 +281,8 @@ module.exports = class Command {
         return this;
     }
 
-    log (text, verbose = 1) {
-        if (this.verbose >= verbose) {
-            this.line(text);
-        }
+    log (text) {
+        this.program.log(text)
         return this;
     }
 }

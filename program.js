@@ -72,7 +72,7 @@ module.exports = class Program {
 
         this.log(`Create command ${command.path}...`);
 
-        command = new command.class(program, this.config, command.path, path);
+        command = new command.class(this, program, this.config, command.path, path);
 
         return command;
     }

@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 module.exports = class Find extends process.Command {
 
     name = 'find <value> [file]';
@@ -25,13 +28,13 @@ module.exports = class Find extends process.Command {
 
         let result = [];
 
-        if (this.option.findFile) {
+        if (this.option.findFile && ! this.arg.file) {
 
-            result = this.findFiles(this.arg.value);
+            result = await this.findFiles(this.arg.value);
 
         } else {
 
-            result = this.findInFiles(this.arg.value);
+            result = await this.findInFiles(this.arg.value);
         }
 
         const endTime = Date.now();
@@ -45,11 +48,15 @@ module.exports = class Find extends process.Command {
         }
     }
 
-    findFiles(fileMask) {
+    quote(str) {
+        return this.str.trim(String(str).replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!>|:\\#]', 'g'), '\\$&')
+            .replace(/\\\*/g, '|'), '|');
+    }
+
+    async findFiles(fileMask, succeed) {
         const dir = this.fs.base_path();
-        const files = this.fs.read_all_dir(dir);
-        const result = [];
-        files.forEach((file) => {
+        const vals = this.quote(fileMask);
+        return await this.read_all_dir_promise(dir, async (file) => {
             const relativePath = file.replace(dir + '/', '');
             if (
                 this.str.is(fileMask, relativePath)
@@ -58,18 +65,18 @@ module.exports = class Find extends process.Command {
                 && !relativePath.startsWith('node_modules')
                 && !relativePath.startsWith('vendor')
             ) {
-                this.info(file);
-                result.push(file);
+                const reg = new RegExp(`(${vals})`, 'g');
+                this.info(file.replace(reg, (m) => m.yellow));
+                return true;
             }
+            return false;
         });
-        return result;
     }
 
-    findInFiles(value) {
+    async findInFiles(value) {
         const dir = this.fs.base_path();
-        const files = this.fs.read_all_dir(dir);
-        const result = [];
-        files.forEach((file) => {
+        const vals = this.quote(value);
+        return await this.read_all_dir_promise(dir, async (file) => {
             const relativePath = file.replace(dir + '/', '');
             if (
                 !relativePath.startsWith('.git')
@@ -77,27 +84,77 @@ module.exports = class Find extends process.Command {
                 && !relativePath.startsWith('node_modules')
                 && !relativePath.startsWith('vendor')
             ) {
-                const content = this.fs.get_contents(file);
-
+                let search = null;
                 if (this.arg.file && ! this.str.is(this.arg.file, relativePath)) {
                     return ;
+                } else if (this.arg.file) {
+                    search = this.quote(this.arg.file);
                 }
+                return await this.readFileContentStream(file, (content) => {
 
-                if (this.str.is(value, content)) {
+                    if (this.str.is(value, content)) {
 
-                    this.info(file);
-                    content.split('\n').forEach((line, n) => {
-                        if (this.str.is(value, line)) {
-                            this.info(`[${n+1}]  ${line}`);
+                        if (search) {
+                            const reg = new RegExp(`(${search})`, 'g');
+                            this.info(file.replace(reg, (m) => m.yellow));
+                        } else {
+                            this.info(file);
                         }
-                    });
-                    result.push({
-                        file: file,
-                        findLine: content.split('\n').filter((line) => line.includes(value))
-                    });
-                }
+                        content.split('\n').forEach((line, n) => {
+                            if (this.str.is(value, line)) {
+                                const reg = new RegExp(`(${vals})`, 'g');
+                                this.info(`[${n+1}]  ${line.replace(reg, (m) => m.yellow)}`);
+                            }
+                        });
+                        return true;
+                    }
+                    return false;
+                });
             }
         });
-        return result;
+    }
+
+    async read_all_dir_promise(dir, cb) {
+        try {
+            const stat = await fs.promises.stat(dir);
+            if (stat.isDirectory() && !stat.isSymbolicLink()) {
+                const files = await fs.promises.readdir(dir);
+                const allFiles = await Promise.all(
+                    files.map(async (file) => {
+                        const name = path.join(dir, file);
+                        const stat = await fs.promises.stat(name);
+                        if (stat.isDirectory() && !stat.isSymbolicLink()) {
+                            try {
+                                return await this.read_all_dir_promise(name, cb);
+                            } catch (e) {
+                                return null;
+                            }
+                        }
+                        const r = await cb(name);
+                        return r ? [name] : null;
+                    })
+                );
+                return allFiles.filter(Boolean).flat().filter(Boolean);
+            }
+            return [];
+        } catch (err) {
+            return [];
+        }
+    }
+
+    async readFileContentStream(filePath, data) {
+        return new Promise((resolve, reject) => {
+            const stream = fs.createReadStream(filePath, { encoding: 'utf8' });
+            let isTrue = false;
+            stream.on('data', (chunk) => {
+                if (chunk instanceof Buffer) {
+                    chunk = chunk.toString('utf8');
+                }
+                const r = data(chunk);
+                if (r) isTrue = true;
+            });
+            stream.on('end', () => resolve(isTrue));
+            stream.on('error', reject);
+        });
     }
 }
