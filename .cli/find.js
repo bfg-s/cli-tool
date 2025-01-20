@@ -9,10 +9,12 @@ module.exports = class Find extends process.Command {
 
     options = [
         ['-f, --file <file>', 'Select file mask to search'],
+        ['-i, --ignore <pattern>', 'Ignore pattern'],
     ];
 
     option = {
         file: null,
+        ignore: null,
     };
 
     arg = {
@@ -55,9 +57,7 @@ module.exports = class Find extends process.Command {
             const relativePath = file.replace(dir + path.sep, '');
             if (
                 !relativePath.startsWith('.git')
-                && !relativePath.startsWith('.idea')
-                && !relativePath.startsWith('node_modules')
-                && !relativePath.startsWith('vendor')
+                && ! this.hasIgnoreCase(file)
                 && this.str.is(fileMask, relativePath)
             ) {
                 this.fileLine(file, searchInFile);
@@ -74,9 +74,7 @@ module.exports = class Find extends process.Command {
             const relativePath = file.replace(dir + path.sep, '');
             if (
                 !relativePath.startsWith('.git')
-                && !relativePath.startsWith('.idea')
-                && !relativePath.startsWith('node_modules')
-                && !relativePath.startsWith('vendor')
+                && ! this.hasIgnoreCase(file)
             ) {
                 let searchInFile = null;
                 if (this.option.file && ! this.str.is(this.option.file, relativePath)) {
@@ -90,6 +88,7 @@ module.exports = class Find extends process.Command {
 
                         let lenFileLine = this.fileLine(file, searchInFile);
                         content.split('\n').forEach((line, n) => {
+                            line = line.trim();
                             if (this.str.is(value, line)) {
                                 n++;
                                 const len = String(n).length;
@@ -154,6 +153,21 @@ module.exports = class Find extends process.Command {
             stream.on('end', () => resolve(isTrue));
             stream.on('error', reject);
         });
+    }
+
+    hasIgnoreCase(text) {
+        if (this.option.ignore) {
+            const ignore = String(this.option.ignore).split('|');
+            for (let i of ignore) {
+                if (! i.includes('*')) {
+                    i = `*${i}*`;
+                }
+                if (this.str.is(i, text)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     fileLine(file, search) {
