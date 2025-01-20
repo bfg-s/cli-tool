@@ -10,11 +10,15 @@ module.exports = class Find extends process.Command {
     options = [
         ['-f, --file <file>', 'Select file mask to search'],
         ['-i, --ignore <pattern>', 'Ignore pattern'],
+        ['-s, --max <size>', 'File max size in bytes or (1B, 1K, 1M, 1G, 1T)'],
+        ['-m, --min <size>', 'File min size in bytes or (1B, 1K, 1M, 1G, 1T)'],
     ];
 
     option = {
         file: null,
         ignore: null,
+        max: null,
+        min: null,
     };
 
     arg = {
@@ -29,11 +33,11 @@ module.exports = class Find extends process.Command {
 
         let result = [];
 
-        if (this.option.file && ! this.arg.value) {
+        if ((this.option.file && ! this.arg.value) || (! this.option.file && ! this.arg.value && (this.option.max || this.option.min))) {
 
-            result = await this.findFiles(this.option.file);
+            result = await this.findFiles(this.option.file || '*');
 
-        } else {
+        } else if (this.arg.value) {
 
             result = await this.findInFiles(this.arg.value);
             this.info(`Matches: `.green + this.matches);
@@ -53,8 +57,15 @@ module.exports = class Find extends process.Command {
     async findFiles(fileMask) {
         const dir = this.fs.base_path();
         const searchInFile = this.quote(fileMask);
-        return await this.read_all_dir_promise(dir, async (file) => {
+        return await this.read_all_dir_promise(dir, async (file, stat) => {
             const relativePath = file.replace(dir + path.sep, '');
+
+            if (this.option.max && stat.size >= this.parseSizeToBytes(this.option.max)) {
+                return false;
+            }
+            if (this.option.min && stat.size <= this.parseSizeToBytes(this.option.min)) {
+                return false;
+            }
             if (
                 !relativePath.startsWith('.git')
                 && ! this.hasIgnoreCase(file)
@@ -70,15 +81,22 @@ module.exports = class Find extends process.Command {
     async findInFiles(value) {
         const dir = this.fs.base_path();
         const searchInContent = this.quote(value);
-        return await this.read_all_dir_promise(dir, async (file) => {
+        return await this.read_all_dir_promise(dir, async (file, stat) => {
             const relativePath = file.replace(dir + path.sep, '');
+
+            if (this.option.max && stat.size >= this.parseSizeToBytes(this.option.max)) {
+                return false;
+            }
+            if (this.option.min && stat.size <= this.parseSizeToBytes(this.option.min)) {
+                return false;
+            }
             if (
                 !relativePath.startsWith('.git')
                 && ! this.hasIgnoreCase(file)
             ) {
                 let searchInFile = null;
                 if (this.option.file && ! this.str.is(this.option.file, relativePath)) {
-                    return ;
+                    return false;
                 } else if (this.option.file) {
                     searchInFile = this.quote(this.option.file);
                 }
@@ -120,6 +138,7 @@ module.exports = class Find extends process.Command {
                     files.map(async (file) => {
                         const name = path.join(dir, file);
                         const stat = await fs.promises.stat(name);
+
                         if (stat.isDirectory() && !stat.isSymbolicLink()) {
                             try {
                                 return await this.read_all_dir_promise(name, cb);
@@ -127,7 +146,7 @@ module.exports = class Find extends process.Command {
                                 return null;
                             }
                         }
-                        const r = await cb(name);
+                        const r = await cb(name, stat);
                         return r ? [name] : null;
                     })
                 );
@@ -153,6 +172,20 @@ module.exports = class Find extends process.Command {
             stream.on('end', () => resolve(isTrue));
             stream.on('error', reject);
         });
+    }
+
+    parseSizeToBytes(sizeStr) {
+        const units = { B: 1, K: 1024, M: 1024 ** 2, G: 1024 ** 3, T: 1024 ** 4 };
+        const match = /^(\d+(?:\.\d+)?)([BKMGTP]?)$/i.exec(sizeStr.trim());
+
+        if (!match) {
+            throw new Error(`Invalid size format: ${sizeStr}`);
+        }
+
+        const [ , value, unit ] = match;
+        const bytes = parseFloat(value) * (units[unit.toUpperCase()] || 1);
+
+        return Math.round(bytes);
     }
 
     hasIgnoreCase(text) {
