@@ -12,6 +12,8 @@ module.exports = class Find extends process.Command {
         ['-i, --ignore <pattern>', 'Ignore pattern'],
         ['-s, --max <size>', 'File max size in bytes or (1B, 1K, 1M, 1G, 1T)'],
         ['-m, --min <size>', 'File min size in bytes or (1B, 1K, 1M, 1G, 1T)'],
+        ['-c, --created <date>', 'File created date'],
+        ['-u, --updated <date>', 'File updated date'],
     ];
 
     option = {
@@ -19,6 +21,8 @@ module.exports = class Find extends process.Command {
         ignore: null,
         max: null,
         min: null,
+        created: null,
+        updated: null,
     };
 
     arg = {
@@ -31,27 +35,26 @@ module.exports = class Find extends process.Command {
 
     async handle() {
 
+        this.prepareOptions();
+
         let result = [];
 
-        if ((this.option.file && ! this.arg.value) || (! this.option.file && ! this.arg.value && (this.option.max || this.option.min))) {
-
-            result = await this.findFiles(this.option.file || '*');
-
-        } else if (this.arg.value) {
-
+        if (this.arg.value) {
             result = await this.findInFiles(this.arg.value);
-            this.info(`Matches: `.green + this.matches);
+            console.log(`Matches: `.green + this.matches);
+        } else {
+            result = await this.findFiles(this.option.file || '*');
         }
 
         if (! result.length) {
             this.warn('Nothing found!');
         } else {
-            this.line('Files: '.green + result.length);
+            console.log('Files: '.green + result.length);
         }
 
         const endTime = Date.now();
         const time = (endTime - this.program.startTime) / 1000;
-        this.info(`Time: `.green + `${time} sec`);
+        console.log(`Time: `.green + `${time} sec`);
     }
 
     async findFiles(fileMask) {
@@ -59,13 +62,6 @@ module.exports = class Find extends process.Command {
         const searchInFile = this.quote(fileMask);
         return await this.read_all_dir_promise(dir, async (file, stat) => {
             const relativePath = file.replace(dir + path.sep, '');
-
-            if (this.option.max && stat.size >= this.parseSizeToBytes(this.option.max)) {
-                return false;
-            }
-            if (this.option.min && stat.size <= this.parseSizeToBytes(this.option.min)) {
-                return false;
-            }
             if (
                 !relativePath.startsWith('.git')
                 && ! this.hasIgnoreCase(file)
@@ -84,12 +80,6 @@ module.exports = class Find extends process.Command {
         return await this.read_all_dir_promise(dir, async (file, stat) => {
             const relativePath = file.replace(dir + path.sep, '');
 
-            if (this.option.max && stat.size >= this.parseSizeToBytes(this.option.max)) {
-                return false;
-            }
-            if (this.option.min && stat.size <= this.parseSizeToBytes(this.option.min)) {
-                return false;
-            }
             if (
                 !relativePath.startsWith('.git')
                 && ! this.hasIgnoreCase(file)
@@ -136,6 +126,11 @@ module.exports = class Find extends process.Command {
                 const files = await fs.promises.readdir(dir);
                 const allFiles = await Promise.all(
                     files.map(async (file) => {
+
+                        if (String(file).endsWith('.DS_Store')) {
+                            return null;
+                        }
+
                         const name = path.join(dir, file);
                         const stat = await fs.promises.stat(name);
 
@@ -145,6 +140,18 @@ module.exports = class Find extends process.Command {
                             } catch (e) {
                                 return null;
                             }
+                        }
+                        if (this.option.max && stat.size >= this.option.max) {
+                            return null;
+                        }
+                        if (this.option.min && stat.size <= this.option.min) {
+                            return null;
+                        }
+                        if (this.option.created && (stat.birthtime <= this.option.created.from || stat.birthtime >= this.option.created.to)) {
+                            return null;
+                        }
+                        if (this.option.updated && (stat.mtime <= this.option.updated.from || stat.mtime >= this.option.updated.to)) {
+                            return null;
                         }
                         const r = await cb(name, stat);
                         return r ? [name] : null;
@@ -172,6 +179,95 @@ module.exports = class Find extends process.Command {
             stream.on('end', () => resolve(isTrue));
             stream.on('error', reject);
         });
+    }
+
+    prepareOptions () {
+        if (this.option.max) this.option.max = this.parseSizeToBytes(this.option.max);
+        if (this.option.min) this.option.min = this.parseSizeToBytes(this.option.min);
+        if (this.option.created) {
+            const created = this.option.created.split(' - ');
+            this.option.created = {
+                from: this.parseRelativeDate(created[0]),
+                to: created[1] ? this.parseRelativeDate(created[1]) : this.parseRelativeDate(created[0]),
+            };
+            if (! created[1]) {
+                this.option.created.to.setHours(23, 59, 59);
+            }
+        }
+        if (this.option.updated) {
+            const updated = this.option.updated.split(' - ');
+            this.option.updated = {
+                from: this.parseRelativeDate(updated[0]),
+                to: updated[1] ? this.parseRelativeDate(updated[1]) : this.parseRelativeDate(updated[0]),
+            };
+            if (! updated[1]) {
+                this.option.updated.to.setHours(23, 59, 59);
+            }
+        }
+    }
+
+    parseRelativeDate(input) {
+        const now = new Date();
+
+        const normalized = input.trim().toLowerCase();
+
+        switch (normalized) {
+            case 'now':
+                return now;
+            case 'today':
+                return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            case 'yesterday':
+                return new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+            case 'tomorrow':
+                return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            case 'endofday':
+                return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+            case 'startofday':
+                return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        }
+
+        const parsedDate = new Date(input);
+        if (!isNaN(parsedDate.getTime())) {
+            return parsedDate;
+        }
+
+        const match = normalized.match(/^([+-]?\d+)\s*(day|week|month|year|hour|minute|second)s?$/);
+        if (match) {
+            const value = parseInt(match[1], 10);
+            const unit = match[2];
+
+            const result = new Date(now);
+
+            switch (unit) {
+                case 'day':
+                    result.setDate(result.getDate() + value);
+                    break;
+                case 'week':
+                    result.setDate(result.getDate() + value * 7);
+                    break;
+                case 'month':
+                    result.setMonth(result.getMonth() + value);
+                    break;
+                case 'year':
+                    result.setFullYear(result.getFullYear() + value);
+                    break;
+                case 'hour':
+                    result.setHours(result.getHours() + value);
+                    break;
+                case 'minute':
+                    result.setMinutes(result.getMinutes() + value);
+                    break;
+                case 'second':
+                    result.setSeconds(result.getSeconds() + value);
+                    break;
+                default:
+                    throw new Error(`Unsupported unit: ${unit}`);
+            }
+
+            return result;
+        }
+
+        this.exit(`Invalid date format: ${input}`);
     }
 
     parseSizeToBytes(sizeStr) {
