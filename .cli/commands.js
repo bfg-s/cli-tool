@@ -5,18 +5,18 @@ module.exports = class Commands extends process.Command {
     description = 'Commands list';
 
     options = [
-        ['-i, --inlined', 'Show inlined commands']
+        ['-l, --list', 'Show simple list of commands'],
     ];
 
     option = {
-        inlined: false
+        list: false
     };
 
     handle() {
 
-        if (! this.option.inlined) {
+        if (! this.option.list) {
 
-            let commands = this.program.commands.map(cmd => {
+            let commands = this.commander.commands.map(cmd => {
                 return [cmd._name, cmd._description];
             });
 
@@ -26,9 +26,9 @@ module.exports = class Commands extends process.Command {
         } else {
 
             this.line(
-                this.program.commands.map(cmd => {
+                this.commander.commands.map(cmd => {
                     return cmd._name;
-                }).join(' ')
+                }).join("\n")
             );
         }
     }
