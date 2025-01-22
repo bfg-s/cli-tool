@@ -42,10 +42,6 @@ module.exports = class Program {
             this.config.updateGlobalHash();
             this.config.updateIncludedPaths();
         }
-
-        rl.on('SIGINT', () => {
-            process.exit();
-        });
     }
 
     applyCommands(commands, path) {
@@ -119,6 +115,13 @@ module.exports = class Program {
                 command[key] = this._requireForce(command.required[key]);
             }
 
+            rl.on('SIGINT', () => {
+                command.outsFunction.map((out) => {
+                    out();
+                });
+                process.exit();
+            });
+
             await this._defaultAction(args, command, cmd);
         });
     }
@@ -152,9 +155,10 @@ module.exports = class Program {
                 command.option[key] = options[key];
             }
             const keysArgs = Object.keys(command.arg);
+
             let index = 0;
             for (const argument of keysArgs) {
-                command.arg[argument] = cmd.args[index] !== undefined ? cmd.args[index] : command.arg[argument];
+                command.arg[argument] = cmd.processedArgs[index] !== undefined ? cmd.processedArgs[index] : command.arg[argument];
                 index++;
             }
 

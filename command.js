@@ -10,6 +10,7 @@ const obj = require('./helpers/obj');
 const str = require('./helpers/str');
 const num = require('./helpers/num');
 const git = require('./helpers/git');
+const argv = require('string-argv');
 
 const PhpBuilder = require('bfg-js-comcode');
 
@@ -29,6 +30,8 @@ module.exports = class Command {
     arg = {};
 
     option = {};
+
+    outsFunction = [];
 
     /**
      * The argument may be <required> or [optional] or <dirs...> for array.
@@ -153,10 +156,11 @@ module.exports = class Command {
         return await promiseFromChildProcess(exec(command, {cwd: dir}), out);
     }
 
-    async spawn (command, args = [], dir = this.pwd) {
-        this.log(`Run cli command: ${command} ${args.join(' ')}`, 1);
+    async spawn (command, args = [], dir = this.pwd, stdio = 'inherit') {
+        const cmdText = `${command} ${args.join(' ')}`;
+        this.log(`Run cli command: ` + cmdText, 1);
         return new Promise((resolve, reject) => {
-            const child = spawn(command, args, {stdio: 'inherit', cwd: dir});
+            const child = spawn(command, args, {stdio, cwd: dir});
 
             let stdout = '';
             let stderr = '';
@@ -177,14 +181,24 @@ module.exports = class Command {
                 if (code === 0) {
                     resolve({ stdout, stderr });
                 } else {
-                    reject(new Error(`Process exited with code ${code}: ${stderr}`));
+                    reject(new Error(`Command [${cmdText}] exited with code ${code}: \n ${stderr}`));
                 }
             });
 
             child.on('error', (err) => {
                 reject(err);
             });
+
+            this.outsFunction.push(() => {
+                child.kill();
+            });
         });
+    }
+
+    parseCommand(command) {
+        const args = argv.default(command);
+        const program = args.shift();
+        return { program, args };
     }
 
     async cmd (command, dir = this.pwd) {
@@ -260,8 +274,10 @@ module.exports = class Command {
     }
 
     error (...data) {
-        data = data.map(p => typeof p === 'string' ? (p.white.bgRed) : p);
-        this.line(...data);
+        data = data.map(p => typeof p === 'string' ? (p.red) : p);
+        if (!this.quiet || this.verbose) {
+            console.error(...data);
+        }
         return this;
     }
 
