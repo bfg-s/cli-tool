@@ -208,7 +208,7 @@ module.exports = class Command {
         return out.flat();
     }
 
-    async ask (question, defaultValue = null, validate) {
+    async ask (question, defaultValue = null, validate = undefined) {
         let result = await this.prompts({
             type: 'text',
             name: 'value',
