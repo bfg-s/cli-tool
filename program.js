@@ -1,7 +1,7 @@
 const { Command } = require('commander');
 const program = new Command();
 const ParentCommand = require('./command');
-const {execSync} = require("child_process");
+const {execSync, spawn} = require("child_process");
 const path = require('path');
 const CommandParent = require('./command');
 const fs = require('fs');
@@ -86,6 +86,8 @@ module.exports = class Program {
 
         const cmd = program.command(name);
 
+        cmd.generalCommandClass = command;
+
         if (description) {
             cmd.description(description);
         }
@@ -109,20 +111,7 @@ module.exports = class Program {
 
         cmd.action(async (...args) => {
 
-            const requiredKeys = Object.keys(command.required);
-
-            for (const key of requiredKeys) {
-                command[key] = this._requireForce(command.required[key]);
-            }
-
-            rl.on('SIGINT', () => {
-                command.outsFunction.map((out) => {
-                    out();
-                });
-                process.exit();
-            });
-
-            await this._defaultAction(args, command, cmd);
+            return await command._defaultAction(args, cmd);
         });
     }
 
@@ -136,40 +125,6 @@ module.exports = class Program {
             this.log(`Command ${name} already exists. Remove...`);
             program.commands.splice(indexFindProgram, 1);
         }
-    }
-
-    async _defaultAction (args, command, cmd) {
-
-        const options = cmd.opts();
-
-        if (options.alias) {
-
-            this._addAlias(options.alias, cmd._name);
-
-        } else {
-
-            this.log('Command action started...');
-
-            const keys = Object.keys(options);
-            for (const key of keys) {
-                command.option[key] = options[key];
-            }
-            const keysArgs = Object.keys(command.arg);
-
-            let index = 0;
-            for (const argument of keysArgs) {
-                command.arg[argument] = cmd.processedArgs[index] !== undefined ? cmd.processedArgs[index] : command.arg[argument];
-                index++;
-            }
-
-            await command.handle.bind(command)(...args);
-        }
-
-        const elapsed = Date.now() - this.startTime;
-        this.log('Finished.');
-        this.log(`Total time: ${elapsed} ms`);
-
-        command.exit();
     }
 
     _addAlias(alias, command) {
@@ -202,34 +157,6 @@ module.exports = class Program {
         );
     }
 
-    _requireForce(module) {
-
-        if (! this.globalPath) {
-            this.globalPath = this.config.getNpmGlobalPath();
-        }
-
-        const modulePath = path.join(this.globalPath, module);
-
-        try {
-            this.log(`Try to require module: ${module}`);
-            const result = require(modulePath);
-            this.log(`Module ${module} included.`);
-            return result;
-        } catch (e) {
-            if (e.code === 'MODULE_NOT_FOUND') {
-                this.log(`Module ${module} not found. Try to install...`);
-                execSync(`npm install -g ${module}`);
-                try {
-                    this.log(`Try to require module: ${module} again`);
-                    return require(modulePath);
-                } catch (e) {
-                    this.log(`Module ${module} not found.`);
-                }
-            }
-        }
-        return null;
-    }
-
     log(message) {
         this.constructor.log(message);
     }
@@ -253,7 +180,14 @@ module.exports = class Program {
         return argsInline.includes(" -q ") || argsInline.includes(" --quiet ");
     }
 
-    run() {
-        program.parse(process.argv);
+    async run() {
+        rl.on('SIGINT', () => {
+            this.log('Received SIGINT signal');
+            process.exit();
+        });
+
+        await program.parseAsync(process.argv);
+
+        process.exit();
     }
 }

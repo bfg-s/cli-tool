@@ -1,7 +1,7 @@
 const Table = require('cli-table3');
 const loading =  require('loading-cli');
 const prompts = require('prompts');
-const { exec, spawn } = require('child_process');
+const { exec, spawn, execSync} = require('child_process');
 const path = require('path');
 const moment = require('moment');
 const lodash = require('lodash');
@@ -11,6 +11,8 @@ const str = require('./helpers/str');
 const num = require('./helpers/num');
 const git = require('./helpers/git');
 const argv = require('string-argv');
+const readline = require('readline');
+const rl = readline.createInterface({input: process.stdin, output: process.stdout});
 
 const PhpBuilder = require('bfg-js-comcode');
 
@@ -90,6 +92,9 @@ module.exports = class Command {
         this.commandFile = commandFile;
         this.commandFilePath = this.fs.dirname(commandFile);
         this.commandFindPath = commandFindPath;
+
+        this.STATUS_OK = 0;
+        this.STATUS_ERROR = 1;
     }
 
     handle () {
@@ -281,7 +286,12 @@ module.exports = class Command {
         return this;
     }
 
-    exit (message, code = 0) {
+    exit (message = null, code = this.STATUS_OK) {
+
+        if (typeof message === 'number') {
+            code = message;
+            message = null;
+        }
 
         if (message) {
             this.error(message);
@@ -300,5 +310,85 @@ module.exports = class Command {
     log (text) {
         this.program.log(text)
         return this;
+    }
+
+    async call (command, ...args) {
+        const parsed = this.parseCommand(command);
+        parsed.args.push(...args);
+        return await this.commander.parseAsync([process.argv[0], process.argv[1], parsed.program, ...parsed.args])
+    }
+
+    async _defaultAction (args, cmd) {
+
+        const requiredKeys = Object.keys(this.required);
+
+        for (const key of requiredKeys) {
+            this[key] = await this._requireForce(this.required[key]);
+        }
+
+        rl.on('SIGINT', () => {
+            this.outsFunction.map((out) => {
+                out();
+            });
+        });
+
+        const options = cmd.opts();
+
+        if (options.alias) {
+
+            this.program._addAlias(options.alias, cmd._name);
+
+        } else {
+
+            this.log('Command action started...');
+
+            const keys = Object.keys(options);
+            for (const key of keys) {
+                this.option[key] = options[key];
+            }
+            const keysArgs = Object.keys(this.arg);
+
+            let index = 0;
+            for (const argument of keysArgs) {
+                this.arg[argument] = cmd.processedArgs[index] !== undefined ? cmd.processedArgs[index] : this.arg[argument];
+                index++;
+            }
+
+            await this.handle.bind(this)(...args);
+        }
+
+        const elapsed = Date.now() - this.program.startTime;
+
+        this.log('Finished.');
+        this.log(`Total time: ${elapsed} ms`);
+    }
+
+    async _requireForce(module) {
+
+        if (! this.globalPath) {
+            this.globalPath = this.config.getNpmGlobalPath();
+        }
+
+        const modulePath = path.join(this.globalPath, module);
+
+        try {
+            this.log(`Try to require module: ${module}`);
+            const result = require(modulePath);
+            this.log(`Module ${module} included.`);
+            return result;
+        } catch (e) {
+            if (e.code === 'MODULE_NOT_FOUND') {
+                this.log(`Module ${module} not found. Try to install...`);
+                //execSync(`npm install -g ${module}`);
+                await this.spawn('npm', ['install', '-g', module]);
+                try {
+                    this.log(`Try to require module: ${module} again`);
+                    return require(modulePath);
+                } catch (e) {
+                    this.log(`Module ${module} not found.`);
+                }
+            }
+        }
+        return null;
     }
 }

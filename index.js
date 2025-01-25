@@ -67,5 +67,5 @@ Program.prepare();
     }
 
     Program.log('Run command...');
-    Program.run();
+    await Program.run();
 })();
