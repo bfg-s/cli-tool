@@ -59,7 +59,7 @@ module.exports = class Command {
         return [];
     }
 
-    get requiredCommandOptions() {
+    get commandRequiredOptions() {
         return [];
     }
 

@@ -76,7 +76,7 @@ module.exports = class Program {
     _setupCommand(command) {
 
         const description = command.commandDescription;
-        const requiredOption = command.requiredCommandOptions;
+        const requiredOption = command.commandRequiredOptions;
         const options = command.commandOptions;
         const name = command.commandName;
 

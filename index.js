@@ -69,3 +69,5 @@ Program.prepare();
     Program.log('Run command...');
     await Program.run();
 })();
+
+module.exports = Program;

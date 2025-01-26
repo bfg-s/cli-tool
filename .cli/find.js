@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = class Find extends process.Command {
 
-    commandName = 'find [value]';
+    commandName = 'find [value-in-files]';
 
     commandDescription = 'Find in files or find files';
 
@@ -26,7 +26,7 @@ module.exports = class Find extends process.Command {
     };
 
     arguments = {
-        value: null,
+        valueInFiles: null,
     };
 
     matches = 0;
@@ -39,8 +39,8 @@ module.exports = class Find extends process.Command {
 
         let result = [];
 
-        if (this.arguments.value) {
-            result = await this.findInFiles(this.arguments.value);
+        if (this.arguments.valueInFiles) {
+            result = await this.findInFiles(this.arguments.valueInFiles);
             console.log(`Matches: `.green + this.matches);
         } else {
             result = await this.findFiles(this.options.file || '*');

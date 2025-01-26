@@ -10,8 +10,8 @@ module.exports = class Parallel extends process.Command {
         ['-i, --immortal', 'Keep alive all process'],
         ['-t, --tries <tries>', 'Tries to repeat command if error (no limit if 0)', 0],
         ['-f, --file <file>', 'File to execute'],
-        ['-c, --create', 'Create file'],
-        ['-g, --global', 'Global file'],
+        ['-c, --create', 'Create file with commands list'],
+        ['-g, --global', 'Global file with commands list'],
         ['-d, --directory <directory>', 'Directory to execute', this.pwd]
     ];
 
@@ -125,7 +125,7 @@ module.exports = class Parallel extends process.Command {
 
     checkRepeats () {
         this.arguments.commands = this.arguments.commands.map(command => {
-            const matches = command.match(/^x\d+\s/);
+            const matches = command.match(/^x\d+/);
             if (matches) {
                 const times = Number(matches[0].replace('x', ''));
                 const otherCommand = command.replace(matches[0], '').trim();

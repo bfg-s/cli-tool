@@ -85,12 +85,12 @@ export interface Command {
     commandFilePath: string;
     commandFindPath: string;
 
-    arg: object,
-    option: object,
-    name: string;
-    description: string;
-    options: object;
-    requiredOptions: object;
+    arguments: object,
+    options: object,
+    commandName: string;
+    commandDescription: string;
+    commandOptions: object;
+    commandRequiredOptions: object;
     required: object;
     verbose: boolean;
     quiet: boolean;
