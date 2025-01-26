@@ -252,6 +252,10 @@ module.exports = class Command {
         return prompts(options);
     }
 
+    async sleep (ms = 1000) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     process (options = {}) {
         return loading(options)
     }

@@ -38,7 +38,7 @@ export interface Command {
         get_element_attrs: (el: any) => object;
         observer: (target: any, events: any, revocable: boolean) => any;
         has: (str: string, obj: any) => any;
-        get: (str: string, obj: any, defaultValue: any) => any;
+        get: (str: string, obj: any, defaultValue?: any) => any;
         set: (str: string, value: any, obj: any) => void;
         delete: (str: string, obj: any) => void;
         each: (target: any, callback: () => {}) => any;
@@ -109,6 +109,7 @@ export interface Command {
     ask (question: string, defaultValue?: string, validate?: any): Promise<string>;
     confirm (message: string, defaultValue: boolean, active: string, inactive: string): Promise<boolean>;
     prompts (options: any): Promise<object>;
+    sleep (ms?: number): Promise<void>;
     process (options: loading.Options|string): loading.Loading;
     tbl (options: object): any;
     table (rows: any[], options: object): this;
