@@ -1,8 +1,8 @@
 module.exports = class Hello extends process.Command {
 
-    name = 'hello';
+    commandName = 'hello';
 
-    description = 'Hello command';
+    commandDescription = 'Hello command';
 
     handle() {
 

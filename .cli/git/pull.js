@@ -1,8 +1,8 @@
 module.exports = class Pull extends process.Command {
 
-    name = 'git:pull';
+    commandName = 'git:pull';
 
-    description = 'Git auto pull';
+    commandDescription = 'Git auto pull';
 
     async handle() {
 

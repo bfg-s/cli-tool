@@ -1,14 +1,14 @@
 module.exports = class Tag extends process.Command {
 
-    name = 'git:tag';
+    commandName = 'git:tag';
 
-    description = 'Git create tag';
+    commandDescription = 'Git create tag';
 
-    options = [
+    commandOptions = [
         ['-p, --publish', 'Publish to npm']
     ];
 
-    option = {
+    options = {
         publish: false
     };
 
@@ -56,7 +56,7 @@ module.exports = class Tag extends process.Command {
 
                 await this.git.pushTag();
 
-                if (this.option.publish) {
+                if (this.options.publish) {
 
                     await this.signed_exec(
                         `GIT: Npm Publish...`,

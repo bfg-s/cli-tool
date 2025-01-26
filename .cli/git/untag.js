@@ -1,10 +1,10 @@
 module.exports = class Untag extends process.Command {
 
-    name = 'git:untag <tag-name>';
+    commandName = 'git:untag <tag-name>';
 
-    description = 'Git delete tag';
+    commandDescription = 'Git delete tag';
 
-    arg = {
+    arguments = {
         tagName: null
     }
 
@@ -12,9 +12,9 @@ module.exports = class Untag extends process.Command {
 
         if (this.git.exists()) {
 
-            await this.git.localeDropTag(this.arg.tagName);
+            await this.git.localeDropTag(this.arguments.tagName);
 
-            await this.git.remoteDropTag(this.arg.tagName);
+            await this.git.remoteDropTag(this.arguments.tagName);
 
             this.success(`GIT: Finished drop tag...`);
 

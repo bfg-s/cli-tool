@@ -3,11 +3,11 @@ const path = require('path');
 
 module.exports = class Find extends process.Command {
 
-    name = 'find [value]';
+    commandName = 'find [value]';
 
-    description = 'Find in files or find files';
+    commandDescription = 'Find in files or find files';
 
-    options = [
+    commandOptions = [
         ['-f, --file <file>', 'Select file mask to search'],
         ['-i, --ignore <pattern>', 'Ignore pattern'],
         ['-s, --max <size>', 'File max size in bytes or (1B, 1K, 1M, 1G, 1T)'],
@@ -16,7 +16,7 @@ module.exports = class Find extends process.Command {
         ['-u, --updated <date>', 'File updated date'],
     ];
 
-    option = {
+    options = {
         file: null,
         ignore: null,
         max: null,
@@ -25,7 +25,7 @@ module.exports = class Find extends process.Command {
         updated: null,
     };
 
-    arg = {
+    arguments = {
         value: null,
     };
 
@@ -39,11 +39,11 @@ module.exports = class Find extends process.Command {
 
         let result = [];
 
-        if (this.arg.value) {
-            result = await this.findInFiles(this.arg.value);
+        if (this.arguments.value) {
+            result = await this.findInFiles(this.arguments.value);
             console.log(`Matches: `.green + this.matches);
         } else {
-            result = await this.findFiles(this.option.file || '*');
+            result = await this.findFiles(this.options.file || '*');
         }
 
         if (! result.length) {
@@ -85,10 +85,10 @@ module.exports = class Find extends process.Command {
                 && ! this.hasIgnoreCase(file)
             ) {
                 let searchInFile = null;
-                if (this.option.file && ! this.str.is(this.option.file, relativePath)) {
+                if (this.options.file && ! this.str.is(this.options.file, relativePath)) {
                     return false;
-                } else if (this.option.file) {
-                    searchInFile = this.quote(this.option.file);
+                } else if (this.options.file) {
+                    searchInFile = this.quote(this.options.file);
                 }
                 return await this.readFileContentStream(file, (content) => {
 
@@ -141,16 +141,16 @@ module.exports = class Find extends process.Command {
                                 return null;
                             }
                         }
-                        if (this.option.max && stat.size >= this.option.max) {
+                        if (this.options.max && stat.size >= this.options.max) {
                             return null;
                         }
-                        if (this.option.min && stat.size <= this.option.min) {
+                        if (this.options.min && stat.size <= this.options.min) {
                             return null;
                         }
-                        if (this.option.created && (stat.birthtime <= this.option.created.from || stat.birthtime >= this.option.created.to)) {
+                        if (this.options.created && (stat.birthtime <= this.options.created.from || stat.birthtime >= this.options.created.to)) {
                             return null;
                         }
-                        if (this.option.updated && (stat.mtime <= this.option.updated.from || stat.mtime >= this.option.updated.to)) {
+                        if (this.options.updated && (stat.mtime <= this.options.updated.from || stat.mtime >= this.options.updated.to)) {
                             return null;
                         }
                         const r = await cb(name, stat);
@@ -182,26 +182,26 @@ module.exports = class Find extends process.Command {
     }
 
     prepareOptions () {
-        if (this.option.max) this.option.max = this.parseSizeToBytes(this.option.max);
-        if (this.option.min) this.option.min = this.parseSizeToBytes(this.option.min);
-        if (this.option.created) {
-            const created = this.option.created.split(' - ');
-            this.option.created = {
+        if (this.options.max) this.options.max = this.parseSizeToBytes(this.options.max);
+        if (this.options.min) this.options.min = this.parseSizeToBytes(this.options.min);
+        if (this.options.created) {
+            const created = this.options.created.split(' - ');
+            this.options.created = {
                 from: this.parseRelativeDate(created[0]),
                 to: created[1] ? this.parseRelativeDate(created[1]) : this.parseRelativeDate(created[0]),
             };
             if (! created[1]) {
-                this.option.created.to.setHours(23, 59, 59);
+                this.options.created.to.setHours(23, 59, 59);
             }
         }
-        if (this.option.updated) {
-            const updated = this.option.updated.split(' - ');
-            this.option.updated = {
+        if (this.options.updated) {
+            const updated = this.options.updated.split(' - ');
+            this.options.updated = {
                 from: this.parseRelativeDate(updated[0]),
                 to: updated[1] ? this.parseRelativeDate(updated[1]) : this.parseRelativeDate(updated[0]),
             };
             if (! updated[1]) {
-                this.option.updated.to.setHours(23, 59, 59);
+                this.options.updated.to.setHours(23, 59, 59);
             }
         }
     }
@@ -285,8 +285,8 @@ module.exports = class Find extends process.Command {
     }
 
     hasIgnoreCase(text) {
-        if (this.option.ignore) {
-            const ignore = String(this.option.ignore).split('|');
+        if (this.options.ignore) {
+            const ignore = String(this.options.ignore).split('|');
             for (let i of ignore) {
                 if (! i.includes('*')) {
                     i = `*${i}*`;

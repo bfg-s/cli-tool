@@ -1,18 +1,18 @@
 module.exports = class Show extends process.Command {
 
-    name = 'cfg:show [name]';
+    commandName = 'cfg:show [name]';
 
-    description = 'Command for show config value';
+    commandDescription = 'Command for show config value';
 
-    arg = {
+    arguments = {
         name: null,
     }
 
     handle() {
 
-        if (this.arg.name) {
+        if (this.arguments.name) {
 
-            this.info(`Config value [${this.arg.name}]: ${this.config.get(this.arg.name)}`);
+            this.info(`Config value [${this.arguments.name}]: ${this.config.get(this.arguments.name)}`);
         } else {
             let rows = [];
 

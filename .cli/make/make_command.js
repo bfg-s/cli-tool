@@ -1,21 +1,21 @@
 module.exports = class MakeCommand extends process.Command {
 
-    name = 'make:command [command-name]';
+    commandName = 'make:command [command-name]';
 
-    description = 'Make new command';
+    commandDescription = 'Make new command';
 
-    options = [
+    commandOptions = [
         ['-c, --command <command-signature>', 'Command name signature'],
         ['-d, --description <command-description>', 'Command description'],
         ['-f, --force', 'Overwrite existing command'],
         ['-i, --interface', 'Create command ".ts" interface'],
     ];
 
-    arg = {
+    arguments = {
         commandName: null
     }
 
-    option = {
+    options = {
         command: null,
         description: 'Unknown command',
         force: false,
@@ -24,15 +24,15 @@ module.exports = class MakeCommand extends process.Command {
 
     async handle() {
 
-        if (! this.arg.commandName && ! this.option.interface) {
+        if (! this.arguments.commandName && ! this.options.interface) {
             this.exit('Command name is required');
         }
 
-        if (this.option.interface) {
+        if (this.options.interface) {
             const interfaceFile = this.path.join(__dirname, '..', '..', 'interface.ts');
             this.fs.copy(interfaceFile, this.fs.base_path('interface.ts'));
             this.success(`Interface [${this.fs.base_path('interface.ts')}] created successfully!`);
-            if (! this.arg.commandName) {
+            if (! this.arguments.commandName) {
                 this.exit();
             }
         }
@@ -46,17 +46,17 @@ module.exports = class MakeCommand extends process.Command {
             }
         }
 
-        const file = this.fs.base_path('.cli', `${this.arg.commandName}.${ext}`);
+        const file = this.fs.base_path('.cli', `${this.arguments.commandName}.${ext}`);
         const exists = this.fs.exists(file);
 
-        if (! this.option.force && exists) {
+        if (! this.options.force && exists) {
             this.error(`Command [${file}] already exists, use --force to overwrite`);
             this.exit();
         }
 
-        const className = this.str.ucfirst(this.str.camel(this.arg.commandName));
-        const command = this.option.command || this.arg.commandName;
-        const description = this.option.description;
+        const className = this.str.ucfirst(this.str.camel(this.arguments.commandName));
+        const command = this.options.command || this.arguments.commandName;
+        const description = this.options.description;
 
         await this.put_stub(file, 'make_command', {
             className, command, description

@@ -1,20 +1,20 @@
 module.exports = class Commands extends process.Command {
 
-    name = 'commands';
+    commandName = 'commands';
 
-    description = 'Commands list';
+    commandDescription = 'Commands list';
 
-    options = [
+    commandOptions = [
         ['-l, --list', 'Show simple list of commands'],
     ];
 
-    option = {
+    options = {
         list: false
     };
 
     handle() {
 
-        if (! this.option.list) {
+        if (! this.options.list) {
 
             let commands = this.commander.commands.map(cmd => {
                 return [cmd._name, cmd._description];

@@ -1,10 +1,10 @@
 module.exports = class Reset extends process.Command {
 
-    name = 'git:reset';
+    commandName = 'git:reset';
 
-    description = 'Git reset';
+    commandDescription = 'Git reset';
 
-    options = [
+    commandOptions = [
         ['--mixed', 'Reset HEAD and index'],
         ['--soft', 'Reset HEAD only'],
         ['--hard', 'Reset HEAD, index and working directory'],
@@ -12,7 +12,7 @@ module.exports = class Reset extends process.Command {
         ['--keep', 'Reset HEAD but keep local changes'],
     ];
 
-    option = {
+    options = {
         mixed: false,
         soft: false,
         hard: false,
@@ -33,11 +33,11 @@ module.exports = class Reset extends process.Command {
     }
 
     get mode () {
-        if (this.option.mixed) {return 'mixed';}
-        if (this.option.soft) {return 'soft';}
-        if (this.option.hard) {return 'hard';}
-        if (this.option.merge) {return 'merge';}
-        if (this.option.keep) {return 'keep';}
+        if (this.options.mixed) {return 'mixed';}
+        if (this.options.soft) {return 'soft';}
+        if (this.options.hard) {return 'hard';}
+        if (this.options.merge) {return 'merge';}
+        if (this.options.keep) {return 'keep';}
         return null;
     }
 }

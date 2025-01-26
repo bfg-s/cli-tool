@@ -1,14 +1,14 @@
 module.exports = class Push extends process.Command {
 
-    name = 'git:push';
+    commandName = 'git:push';
 
-    description = 'Git auto push';
+    commandDescription = 'Git auto push';
 
-    options = [
+    commandOptions = [
         ['-l, --last-message', 'Make commit with last message'],
     ];
 
-    option = {
+    options = {
         lastMessage: false
     };
 
@@ -24,7 +24,7 @@ module.exports = class Push extends process.Command {
 
                 let comment = null;
 
-                if (this.option.lastMessage) {
+                if (this.options.lastMessage) {
                     comment = await this.git.getLastCommitMessage(comment);
                 }
 

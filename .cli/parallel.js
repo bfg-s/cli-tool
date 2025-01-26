@@ -2,11 +2,11 @@ const os = require('os');
 
 module.exports = class Parallel extends process.Command {
 
-    name = 'parallel [commands...]';
+    commandName = 'parallel [commands...]';
 
-    description = 'Compact call of commands together';
+    commandDescription = 'Compact call of commands together';
 
-    options = [
+    commandOptions = [
         ['-i, --immortal', 'Keep alive all process'],
         ['-t, --tries <tries>', 'Tries to repeat command if error (no limit if 0)', 0],
         ['-f, --file <file>', 'File to execute'],
@@ -15,11 +15,11 @@ module.exports = class Parallel extends process.Command {
         ['-d, --directory <directory>', 'Directory to execute', this.pwd]
     ];
 
-    arg = {
+    arguments = {
         commands: []
     };
 
-    option = {
+    options = {
         immortal: false,
         file: null,
         create: false,
@@ -30,9 +30,9 @@ module.exports = class Parallel extends process.Command {
 
     async handle() {
 
-        await this.parseFile(this.option.file);
+        await this.parseFile(this.options.file);
 
-        if (! this.arg.commands || ! this.arg.commands.length) {
+        if (! this.arguments.commands || ! this.arguments.commands.length) {
             this.error('Enter at least one command');
             this.exit();
         }
@@ -43,12 +43,12 @@ module.exports = class Parallel extends process.Command {
 
         this.checkRepeats();
 
-        this.arg.commands.forEach(command => {
+        this.arguments.commands.forEach(command => {
             if (! command) return false;
             command = String(command).trim();
-            let immortal = this.option.tries ? true : this.option.immortal;
+            let immortal = this.options.tries ? true : this.options.immortal;
             const matches = command.match(/^t\d+\s/);
-            let tries = this.option.tries;
+            let tries = this.options.tries;
             if (matches) {
                 tries = Number(matches[0].replace('t', ''));
                 command = command.replace(matches[0], '').trim();
@@ -68,7 +68,7 @@ module.exports = class Parallel extends process.Command {
                     await this.spawn(
                         shell,
                         [shellArg, command],
-                        this.option.directory,
+                        this.options.directory,
                         this.quiet ? null : 'inherit'
                     );
                 } catch (e) {
@@ -89,21 +89,21 @@ module.exports = class Parallel extends process.Command {
 
     async parseFile (fileName) {
         if (fileName) {
-            let file = this.option.global
+            let file = this.options.global
                 ? this.fs.path(os.homedir(), '.' + fileName + '.parallel')
-                : this.fs.path(this.option.directory, '.' + fileName + '.parallel');
+                : this.fs.path(this.options.directory, '.' + fileName + '.parallel');
 
             const fileExists = this.fs.exists(file);
-            if (! this.option.create && fileExists) {
+            if (! this.options.create && fileExists) {
                 const content = this.fs.get_contents(file);
                 const commands = content.replace(/\\\n/g, '').split('\n').filter(Boolean).map(command => {
                     return command.trim();
                 });
-                this.arg.commands = this.arg.commands.concat(commands);
+                this.arguments.commands = this.arguments.commands.concat(commands);
             } else {
-                if (this.option.create) {
-                    if (this.arg.commands.length) {
-                        this.fs.put_contents(file, this.arg.commands ? this.arg.commands.join('\n') : '');
+                if (this.options.create) {
+                    if (this.arguments.commands.length) {
+                        this.fs.put_contents(file, this.arguments.commands ? this.arguments.commands.join('\n') : '');
                         this.success(`File [${file}] ${fileExists ? 'updated':'created'} successfully!`);
                         this.exit();
                     } else {
@@ -116,7 +116,7 @@ module.exports = class Parallel extends process.Command {
                 }
             }
         } else {
-            if (this.option.create) {
+            if (this.options.create) {
                 this.error('Enter file name to create with (-f, --file) option');
                 this.exit();
             }
@@ -124,7 +124,7 @@ module.exports = class Parallel extends process.Command {
     }
 
     checkRepeats () {
-        this.arg.commands = this.arg.commands.map(command => {
+        this.arguments.commands = this.arguments.commands.map(command => {
             const matches = command.match(/^x\d+\s/);
             if (matches) {
                 const times = Number(matches[0].replace('x', ''));

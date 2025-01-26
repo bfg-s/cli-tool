@@ -75,10 +75,10 @@ module.exports = class Program {
 
     _setupCommand(command) {
 
-        const description = command.description;
-        const requiredOption = command.requiredOptions;
-        const options = command.options;
-        const name = command.name;
+        const description = command.commandDescription;
+        const requiredOption = command.requiredCommandOptions;
+        const options = command.commandOptions;
+        const name = command.commandName;
 
         this.log(`Setup command ${name}...`);
 

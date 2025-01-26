@@ -29,9 +29,9 @@ function promiseFromChildProcess(child, out = []) {
 
 module.exports = class Command {
 
-    arg = {};
+    arguments = {};
 
-    option = {};
+    options = {};
 
     outsFunction = [];
 
@@ -39,11 +39,11 @@ module.exports = class Command {
      * The argument may be <required> or [optional] or <dirs...> for array.
      * @returns {string}
      */
-    get name() {
+    get commandName() {
         return this.constructor.name.toLowerCase();
     }
 
-    get description() {
+    get commandDescription() {
         return 'Unknown command';
     }
 
@@ -54,11 +54,11 @@ module.exports = class Command {
      * ]
      * @returns {*[]}
      */
-    get options() {
+    get commandOptions() {
         return [];
     }
 
-    get requiredOptions() {
+    get requiredCommandOptions() {
         return [];
     }
 
@@ -343,14 +343,15 @@ module.exports = class Command {
             this.log('Command action started...');
 
             const keys = Object.keys(options);
+            const keysArgs = Object.keys(this.arguments);
+
             for (const key of keys) {
-                this.option[key] = options[key];
+                this.options[key] = options[key];
             }
-            const keysArgs = Object.keys(this.arg);
 
             let index = 0;
             for (const argument of keysArgs) {
-                this.arg[argument] = cmd.processedArgs[index] !== undefined ? cmd.processedArgs[index] : this.arg[argument];
+                this.arguments[argument] = cmd.processedArgs[index] !== undefined ? cmd.processedArgs[index] : this.arguments[argument];
                 index++;
             }
 
