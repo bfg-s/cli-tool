@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const str = new (require('./str'));
 const obj = new (require('./obj'))({str});
 
@@ -21,9 +22,12 @@ module.exports = class Fs {
         return path.join(this.pwd, ...parts);
     }
 
-    dirname (path) {
-        return String(path).replace(/\\/g, '/')
-            .replace(/\/[^/]*\/?$/, '');
+    dirname(path) {
+        const normalizedPath = String(path).replace(/\\/g, '/');
+        if (os.platform() === 'win32') {
+            return normalizedPath.replace(/\/[^/]*\/?$/, '');
+        }
+        return normalizedPath.replace(/\/[^/]*\/?$/, '');
     }
 
     read_all_dir (dir) {

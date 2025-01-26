@@ -1,4 +1,5 @@
 const Table = require('cli-table3');
+const axios = require('axios');
 const loading =  require('loading-cli');
 const prompts = require('prompts');
 const { exec, spawn, execSync} = require('child_process');
@@ -82,6 +83,7 @@ module.exports = class Command {
         this.path = path;
         this.moment = moment;
         this.lodash = lodash;
+        this.axios = axios;
 
         this.fs = new fs(this);
         this.str = new str(this);
