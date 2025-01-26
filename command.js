@@ -122,6 +122,17 @@ module.exports = class Command {
         );
     }
 
+    js_ext (dir = this.pwd) {
+        let ext = 'js';
+        if (this.fs.exists(this.fs.path(dir, 'package.json'))) {
+            let json = this.fs.get_json_contents(this.fs.path(dir, 'package.json'));
+            if (json.type && json.type !== 'commonjs') {
+                ext = 'cjs';
+            }
+        }
+        return ext;
+    }
+
     phpBuilder (file) {
         return new PhpBuilder(file);
     }
@@ -298,6 +309,13 @@ module.exports = class Command {
         }
 
         process.exit(code);
+    }
+
+    write (data) {
+        if (!this.quiet) {
+            process.stdout.write(data);
+        }
+        return this;
     }
 
     line (...data) {

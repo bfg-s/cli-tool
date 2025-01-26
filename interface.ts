@@ -99,6 +99,7 @@ export interface Command {
 
     stub (stub: string, params: object): string;
     put_stub (file: string, stub: string, params?: object): Promise<void>;
+    js_ext (dir?: string): "js" | "cjs";
     success (text: string): this;
     fail (text: string): this;
     warn (text: string): this;
@@ -116,6 +117,7 @@ export interface Command {
     info (...data: any[]): this;
     error (...data: any[]): this;
     exit (message: string, code: number): void;
+    write (data: Uint8Array|string): this;
     line (...data: any[]): this;
     log (text: string, verbose: number): this;
 }
