@@ -4,6 +4,8 @@ module.exports = class {className} extends process.Command {
 
     commandDescription = '{description}';
 
+    commandOptions = [];
+
     async handle() {
 
         // Your code here
