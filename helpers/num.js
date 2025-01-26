@@ -5,6 +5,7 @@ module.exports = class Num {
      * @param num
      */
     isNumber (num) {
+        if (num === null || num === undefined) { return false; }
         return !isNaN(Number(num))
     }
 }
