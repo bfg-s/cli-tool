@@ -195,6 +195,10 @@ module.exports = class Str {
      */
     is (pattern, text) {
 
+        if (pattern === text) {
+            return true;
+        }
+
         pattern = pattern
             .replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}!|:\\#]', 'g'), '\\$&')
             .replace(/\\\*/g, '.*');

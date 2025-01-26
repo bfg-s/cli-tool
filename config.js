@@ -84,9 +84,11 @@ module.exports = new class Config {
 
     getNpmGlobalHash (live = false) {
         if (live) {
-            return str.md5(fs.read_dir(this.getNpmGlobalPath()).filter(dir => {
-                return fs.is_dir(fs.path(dir, '.cli'));
-            }).join('|'));
+            const globalPath = this.getNpmGlobalPath();
+            const dirs = fs.read_dir(globalPath).filter(dir => {
+                return fs.is_dir(fs.path(globalPath, dir, '.cli'));
+            }).join('|');
+            return str.md5(dirs);
         }
         return this.get(this.NPM_GLOBAL_HASH, this.updateGlobalHash);
     }

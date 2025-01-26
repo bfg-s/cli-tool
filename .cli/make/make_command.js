@@ -30,8 +30,8 @@ module.exports = class MakeCommand extends process.Command {
 
         if (this.option.interface) {
             const interfaceFile = this.path.join(__dirname, '..', '..', 'interface.ts');
-            this.fs.copy(interfaceFile, this.fs.base_path('.cli', 'interface.ts'));
-            this.success(`Interface [${this.fs.base_path('.cli', 'interface.ts')}] created successfully!`);
+            this.fs.copy(interfaceFile, this.fs.base_path('interface.ts'));
+            this.success(`Interface [${this.fs.base_path('interface.ts')}] created successfully!`);
             if (! this.arg.commandName) {
                 this.exit();
             }

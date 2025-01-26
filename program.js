@@ -107,7 +107,7 @@ module.exports = class Program {
         cmd
             .option('-q, --quiet', 'Disable output messages')
             .option('-v, --verbose', 'Enable verbose mode')
-            .option('-a, --alias <alias>', 'Add alias for command');
+            .option('--alias <alias>', 'Add alias for command');
 
         cmd.action(async (...args) => {
 

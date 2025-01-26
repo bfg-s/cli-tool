@@ -98,7 +98,7 @@ export interface Command {
     phpBuilder (file: string): PhpBuilder;
 
     stub (stub: string, params: object): string;
-    put_stub (file: string, stub: string, params: object): Promise<void>;
+    put_stub (file: string, stub: string, params?: object): Promise<void>;
     success (text: string): this;
     fail (text: string): this;
     warn (text: string): this;
