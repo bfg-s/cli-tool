@@ -55,15 +55,15 @@ Program.prepare();
     }
 
     Program.log(`Apply commands to ${toolPath} path...`);
-    Program.applyCommands(toolPathCommands, toolPath);
+    await Program.applyCommands(toolPathCommands, toolPath);
     Program.log(`Apply commands to ${homePath} path...`);
-    Program.applyCommands(homePathCommands, homePath);
+    await Program.applyCommands(homePathCommands, homePath);
     Program.log(`Apply commands to ${currentPath} path...`);
-    Program.applyCommands(currentPathCommands, currentPath);
+    await Program.applyCommands(currentPathCommands, currentPath);
 
     for (const includedPathCommands of includedPathsCommands) {
         Program.log(`Apply commands to ${includedPathCommands.path} path...`);
-        Program.applyCommands(includedPathCommands.commands, includedPathCommands.path);
+        await Program.applyCommands(includedPathCommands.commands, includedPathCommands.path);
     }
 
     Program.log('Run command...');

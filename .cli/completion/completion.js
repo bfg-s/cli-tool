@@ -17,6 +17,11 @@ module.exports = class InstallCompletion extends process.Command {
         this.completion(env);
     }
 
+    async validation () {
+
+        return ! this.is_windows();
+    }
+
     completion (env) {
 
         if (!env.complete) return;
@@ -44,7 +49,6 @@ module.exports = class InstallCompletion extends process.Command {
                     return tabtab.log(result);
                 }
             }
-            return ;
         }
 
         const commands = this.commander.commands.map(command => {

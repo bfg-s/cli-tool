@@ -18,9 +18,9 @@ module.exports = class Push extends process.Command {
 
             const existsForCommit = await this.git.existsForCommit();
 
-            if (existsForCommit) {
+            const branch = await this.git.getCurrentBranch();
 
-                const branch = await this.git.getCurrentBranch();
+            if (existsForCommit) {
 
                 let comment = null;
 
@@ -43,15 +43,19 @@ module.exports = class Push extends process.Command {
 
                 await this.git.add(branch);
                 await this.git.commit(branch, comment);
-                await this.git.push(branch);
-
-                //this.success(`GIT: [${branch}] Pushed on repository!`);
             }
 
             else {
 
                 this.warn(`GIT: Nothing to commit!`);
             }
+
+            try {
+                await this.git.push(branch);
+            } catch (e) {
+                this.line(e.message);
+            }
+
         } else {
 
             this.error(`GIT: Not a git repository!`);

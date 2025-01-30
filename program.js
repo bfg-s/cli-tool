@@ -44,19 +44,22 @@ module.exports = class Program {
         }
     }
 
-    applyCommands(commands, path) {
+    async applyCommands(commands, path) {
         for (const command of commands) {
-            this.applyCommand(command, path);
+            await this.applyCommand(command, path);
         }
     }
 
-    applyCommand(commandSchema, path) {
+    async applyCommand(commandSchema, path) {
 
         const command = this._createCommand(commandSchema, path);
 
         if (command instanceof ParentCommand) {
 
-            this._setupCommand(command);
+            if (await command.validation()) {
+
+                this._setupCommand(command);
+            }
         }
     }
 
@@ -84,9 +87,12 @@ module.exports = class Program {
 
         this._deleteExistsCommand(name);
 
+
+
         const cmd = program.command(name);
 
         cmd.generalCommandClass = command;
+        cmd.originalName = name;
 
         if (description) {
             cmd.description(description);
@@ -106,8 +112,11 @@ module.exports = class Program {
 
         cmd
             .option('-q, --quiet', 'Disable output messages')
-            .option('-v, --verbose', 'Enable verbose mode')
-            .option('--alias <alias>', 'Add alias for command');
+            .option('-v, --verbose', 'Enable verbose mode');
+
+        if (! command.is_windows()) {
+            cmd.option('--alias <alias>', 'Add alias for command');
+        }
 
         cmd.action(async (...args) => {
 

@@ -14,4 +14,9 @@ module.exports = class UninstallCompletion extends process.Command {
 
         this.success('CLI completion uninstalled successfully!');
     }
+
+    async validation () {
+
+        return ! this.is_windows();
+    }
 }

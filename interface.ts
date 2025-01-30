@@ -97,6 +97,7 @@ export interface Command {
 
     phpBuilder (file: string): PhpBuilder;
 
+    is_windows(): boolean;
     stub (stub: string, params: object): string;
     put_stub (file: string, stub: string, params?: object): Promise<void>;
     js_ext (dir?: string): "js" | "cjs";

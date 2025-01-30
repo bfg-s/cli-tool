@@ -16,4 +16,9 @@ module.exports = class InstallCompletion extends process.Command {
 
         this.success('CLI completion installed successfully!');
     }
+
+    async validation () {
+
+        return ! this.is_windows();
+    }
 }

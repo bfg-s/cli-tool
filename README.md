@@ -23,13 +23,14 @@ To enable command completion for the tool, you need to run the following command
 ```bash
 cli completion:install
 ```
-
+> Don't work in windows terminal
 
 ### Completion uninstall
 To disable command completion for the tool, you need to run the following command in the terminal:
 ```bash
 cli completion:uninstall
 ```
+> Don't work in windows terminal
 
 ### Create new command
 To create a new command, you need to run the following command in the terminal:

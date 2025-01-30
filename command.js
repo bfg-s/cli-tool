@@ -103,6 +103,15 @@ module.exports = class Command {
 
     }
 
+    async validation () {
+
+        return true;
+    }
+
+    is_windows () {
+        return process.platform === 'win32';
+    }
+
     stub (stub, params = {}) {
 
         const file = this.fs.path(this.commandFilePath, 'stubs', `${stub}.stub`);
