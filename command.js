@@ -180,7 +180,8 @@ module.exports = class Command {
 
     async exec (command, out = [], dir = this.pwd) {
         this.log(`Run cli command: ${command}`, 1);
-        return await promiseFromChildProcess(exec(command, {cwd: dir}), out);
+        await promiseFromChildProcess(exec(command, {cwd: dir}), out);
+        return out.flat().join("\n");
     }
 
     async spawn (command, args = [], dir = this.pwd, stdio = 'inherit') {
