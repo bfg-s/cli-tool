@@ -61,21 +61,21 @@ export interface Command {
     str: {
         to_nodes: (html: string) => any;
         preg_match_all: (pattern: any, str: string) => any;
-        replace_tags: (target: string, params: object, markers: string|string[]) => string;
+        replace_tags: (target: string, params: object, markers?: string|string[]) => string;
         end_with: (str: string, end: string) => boolean;
         start_with: (str: string, start: string) => boolean;
         contains: (str: string, contain: string) => boolean;
         dirname: (path: string) => string;
         ucfirst: (str: string) => string;
-        camel: (str: string, first: boolean) => string;
-        snake: (str: string, separator: string) => string;
+        camel: (str: string, first?: boolean) => string;
+        snake: (str: string, separator?: string) => string;
         translit: (str: string) => string;
-        slug: (str: string, separator: string) => string;
+        slug: (str: string, separator?: string) => string;
         query_get: (name: string) => any;
         is: (pattern: string, text: string) => boolean;
-        trim: (str: string, charlist: string) => string;
-        number_format: (num: number, decimals: number, dec_point: string, thousands_sep: string) => string;
-        http_build_query: (obj: object, num_prefix: string, temp_key: string) => string;
+        trim: (str: string, charlist?: string) => string;
+        number_format: (num: number, decimals?: number, dec_point?: string, thousands_sep?: string) => string;
+        http_build_query: (obj: object, num_prefix?: string, temp_key?: string) => string;
     };
     num: {
         isNumber: (num: any) => boolean;
