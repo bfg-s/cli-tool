@@ -107,6 +107,7 @@ export interface Command {
     warn (text: string): this;
     signed_exec (title: string, command: string, dir: string): Promise<string[]>;
     exec (command: string, out: string[], dir: string): Promise<string>;
+    spawn (command: string, args?: string[], dir?: string, stdio?: string): Promise<void>;
     cmd (command: string, dir: string): Promise<string[]>;
     ask (question: string, defaultValue?: string, validate?: any): Promise<string>;
     confirm (message: string, defaultValue: boolean, active: string, inactive: string): Promise<boolean>;
