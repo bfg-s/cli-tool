@@ -1,6 +1,7 @@
 export interface Command {
     moment(): moment.Moment;
-    lodash: {};
+    lodash: Lodash;
+    axios: Axios;
     path: {
         join: (...paths: string[]) => string;
     };
@@ -124,6 +125,345 @@ export interface Command {
     log (text: string, verbose: number): this;
 }
 
+declare interface Lodash {
+    chunk<T>(array: List<T>, size?: number): T[][];
+    compact<T>(array: List<T>): T[];
+    concat<T>(array: List<T>, ...values: (T | T[])[]): T[];
+    difference<T>(array: List<T>, ...values: List<T>[]): T[];
+    differenceBy<T>(array: List<T>, values: List<T>, iteratee: ValueIteratee<T>): T[];
+    differenceWith<T>(array: List<T>, values: List<T>, comparator: Comparator<T>): T[];
+    drop<T>(array: List<T>, n?: number): T[];
+    dropRight<T>(array: List<T>, n?: number): T[];
+    dropRightWhile<T>(array: List<T>, predicate: ValueIteratee<T>): T[];
+    dropWhile<T>(array: List<T>, predicate: ValueIteratee<T>): T[];
+    fill<T>(array: List<T>, value: T, start?: number, end?: number): T[];
+    findIndex<T>(array: List<T>, predicate: ValueIteratee<T>): number;
+    findLastIndex<T>(array: List<T>, predicate: ValueIteratee<T>): number;
+    head<T>(array: List<T>): T;
+    flatten<T>(array: List<T | T[]>): T[];
+    flattenDeep<T>(array: List<T | T[]>): T[];
+    flattenDepth<T>(array: List<T | T[]>, depth?: number): T[];
+    fromPairs<T>(pairs: List<List<T>>): { [index: string]: T };
+    indexOf<T>(array: List<T>, value: T, fromIndex?: number): number;
+    initial<T>(array: List<T>): T[];
+    intersection<T>(...arrays: List<T>[]): T[];
+    intersectionBy<T>(...arrays: List<T>[]): T[];
+    intersectionWith<T>(...arrays: List<T>[]): T[];
+    join(array: List<any>, separator?: string): string;
+    last<T>(array: List<T>): T;
+    lastIndexOf<T>(array: List<T>, value: T, fromIndex?: number): number;
+    nth<T>(array: List<T>, n?: number): T;
+    pull<T>(array: List<T>, ...values: T[]): T[];
+    pullAll<T>(array: List<T>, values: List<T>): T[];
+    pullAllBy<T>(array: List<T>, values: List<T>, iteratee: ValueIteratee<T>): T[];
+    pullAllWith<T>(array: List<T>, values: List<T>, comparator: Comparator<T>): T[];
+    pullAt<T>(array: List<T>, ...indexes: (number | number[])[]): T[];
+    remove<T>(array: List<T>, predicate: ValueIteratee<T>): T[];
+    reverse<T>(array: List<T>): T[];
+    slice<T>(array: List<T>, start?: number, end?: number): T[];
+    sortedIndex<T>(array: List<T>, value: T): number;
+    sortedIndexBy<T>(array: List<T>, value: T, iteratee: ValueIteratee<T>): number;
+    sortedIndexOf<T>(array: List<T>, value: T): number;
+    sortedLastIndex<T>(array: List<T>, value: T): number;
+    sortedLastIndexBy<T>(array: List<T>, value: T, iteratee: ValueIteratee<T>): number;
+    sortedLastIndexOf<T>(array: List<T>, value: T): number;
+    sortedUniq<T>(array: List<T>): T[];
+    sortedUniqBy<T>(array: List<T>, iteratee: ValueIteratee<T>): T[];
+    tail<T>(array: List<T>): T[];
+    take<T>(array: List<T>, n?: number): T[];
+    takeRight<T>(array: List<T>, n?: number): T[];
+    takeRightWhile<T>(array: List<T>, predicate: ValueIteratee<T>): T[];
+    takeWhile<T>(array: List<T>, predicate: ValueIteratee<T>): T[];
+    union<T>(...arrays: List<T>[]): T[];
+    unionBy<T>(...arrays: List<T>[]): T[];
+    unionWith<T>(...arrays: List<T>[]): T[];
+    uniq<T>(array: List<T>): T[];
+    uniqBy<T>(array: List<T>, iteratee: ValueIteratee<T>): T[];
+    uniqWith<T>(array: List<T>, comparator: Comparator<T>): T[];
+    unzip<T>(array: List<T[]>): T[][];
+    unzipWith<T>(array: List<T[]>, iteratee: (...args: T[]) => any): T[];
+    without<T>(array: List<T>, ...values: T[]): T[];
+    xor<T>(...arrays: List<T>[]): T[];
+    xorBy<T>(...arrays: List<T>[]): T[];
+    xorWith<T>(...arrays: List<T>[]): T[];
+    zip<T>(...arrays: List<T>[]): T[][];
+    zipObject(props: List<string>, values: List<any>): { [index: string]: any };
+    zipObjectDeep(props: List<string>, values: List<any>): { [index: string]: any };
+    zipWith<T>(...arrays: List<T>[]): T[];
+    countBy<T>(collection: List<T>, iteratee: ValueIteratee<T>): { [index: string]: number };
+    forEach<T>(collection: List<T>, iteratee: ValueIteratee<T>): List<T>;
+    forEachRight<T>(collection: List<T>, iteratee: ValueIteratee<T>): List<T>;
+    every<T>(collection: List<T>, predicate: ValueIteratee<T>): boolean;
+    filter<T>(collection: List<T>, predicate: ValueIteratee<T>): T[];
+    find<T>(collection: List<T>, predicate: ValueIteratee<T>): T;
+    findLast<T>(collection: List<T>, predicate: ValueIteratee<T>): T;
+    flatMap<T, TResult>(collection: List<T>, iteratee: ValueIteratee<T>): TResult[];
+    flatMapDeep<T, TResult>(collection: List<T>, iteratee: ValueIteratee<T>): TResult[];
+    flatMapDepth<T, TResult>(collection: List<T>, iteratee: ValueIteratee<T>, depth?: number): TResult[];
+    groupBy<T>(collection: List<T>, iteratee: ValueIteratee<T>): { [index: string]: T[] };
+    includes(collection: List<any>, value: any, fromIndex?: number): boolean;
+    invokeMap(collection: List<any>, path: string | string[], ...args: any[]): any[];
+    keyBy<T>(collection: List<T>, iteratee: ValueIteratee<T>): { [index: string]: T };
+    map<T, TResult>(collection: List<T>, iteratee: ValueIteratee<T>): TResult[];
+    orderBy<T>(collection: List<T>, iteratees: ValueIteratee<T>[], orders: ("asc" | "desc")[]): T[];
+    partition<T>(collection: List<T>, predicate: ValueIteratee<T>): [T[], T[]];
+    reduce<T, TResult>(collection: List<T>, iteratee: (accumulator: TResult, value: T) => TResult, accumulator: TResult): TResult;
+    reduceRight<T, TResult>(collection: List<T>, iteratee: (accumulator: TResult, value: T) => TResult, accumulator: TResult): TResult;
+    reject<T>(collection: List<T>, predicate: ValueIteratee<T>): T[];
+    sample<T>(collection: List<T>): T;
+    sampleSize<T>(collection: List<T>, n: number): T[];
+    shuffle<T>(collection: List<T>): T[];
+    size(collection: List<any>): number;
+    some<T>(collection: List<T>, predicate: ValueIteratee<T>): boolean;
+    sortBy<T>(collection: List<T>, iteratees: ValueIteratee<T>[]): T[];
+    now(): number;
+    after<T extends Function>(n: number, func: T): T;
+    ary<T extends Function>(func: T, n?: number): T;
+    before<T extends Function>(n: number, func: T): T;
+    bind(func: Function, thisArg: any, ...partials: any[]): Function;
+    bindKey(func: Function, thisArg: any, ...partials: any[]): Function;
+    curry(func: Function, arity?: number): Function;
+    curryRight(func: Function, arity?: number): Function;
+    debounce(func: Function, wait?: number, options?: { leading?: boolean, maxWait?: number, trailing?: boolean }): Function;
+    defer(func: Function, ...args: any[]): number;
+    delay(func: Function, wait: number, ...args: any[]): number;
+    flip(func: Function): Function;
+    memoize(func: Function, resolver?: Function): Function;
+    negate(predicate: Function): Function;
+    once(func: Function): Function;
+    over(args: Function[]): Function;
+    overEvery(predicates: Function[]): Function;
+    overSome(predicates: Function[]): Function;
+    partial(func: Function, ...partials: any[]): Function;
+    partialRight(func: Function, ...partials: any[]): Function;
+    rearg(func: Function, indexes: number[]): Function;
+    rest(func: Function, start?: number): Function;
+    spread(func: Function): Function;
+    throttle(func: Function, wait?: number, options?: { leading?: boolean, trailing?: boolean }): Function;
+    unary(func: Function): Function;
+    wrap(value: any, wrapper: (value: any) => any): Function;
+    castArray<T>(value: T): T[];
+    clone<T>(value: T): T;
+    cloneDeep<T>(value: T): T;
+    cloneDeepWith<T>(value: T, customizer: (value: any) => any): T;
+    cloneWith<T>(value: T, customizer: (value: any) => any): T;
+    conformsTo(object: object, source: object): boolean;
+    eq(value: any, other: any): boolean;
+    gt(value: any, other: any): boolean;
+    gte(value: any, other: any): boolean;
+    isArguments(value: any): boolean;
+    isArray(value: any): value is any[];
+    isArrayBuffer(value: any): boolean;
+    isArrayLike(value: any): boolean;
+    isArrayLikeObject(value: any): boolean;
+    isBoolean(value: any): value is boolean;
+    isBuffer(value: any): boolean;
+    isDate(value: any): value is Date;
+    isElement(value: any): boolean;
+    isEmpty(value: any): boolean;
+    isEqual(value: any, other: any): boolean;
+    isEqualWith(value: any, other: any, customizer: (value: any, other: any) => boolean): boolean;
+    isError(value: any): value is Error;
+    isFinite(value: any): boolean;
+    isFunction(value: any): value is Function;
+    isInteger(value: any): boolean;
+    isLength(value: any): boolean;
+    isMap(value: any): boolean;
+    isMatch(object: object, source: object): boolean;
+    isMatchWith(object: object, source: object, customizer: (value: any, other: any) => boolean): boolean;
+    isNaN(value: any): boolean;
+    isNative(value: any): boolean;
+    isNil(value: any): value is null | undefined;
+    isNull(value: any): value is null;
+    isNumber(value: any): value is number;
+    isObject(value: any): value is object;
+    isObjectLike(value: any): boolean;
+    isPlainObject(value: any): boolean;
+    isRegExp(value: any): value is RegExp;
+    isSafeInteger(value: any): boolean;
+    isSet(value: any): boolean;
+    isString(value: any): value is string;
+    isSymbol(value: any): value is symbol;
+    isTypedArray(value: any): boolean;
+    isUndefined(value: any): value is undefined;
+    isWeakMap(value: any): boolean;
+    isWeakSet(value: any): boolean;
+    lt(value: any, other: any): boolean;
+    lte(value: any, other: any): boolean;
+    toArray<T>(value: T): T[];
+    toFinite(value: any): number;
+    toInteger(value: any): number;
+    toLength(value: any): number;
+    toNumber(value: any): number;
+    toPlainObject(value: any): object;
+    toSafeInteger(value: any): number;
+    toString(value: any): string;
+    add(augend: number, addend: number): number;
+    ceil(number: number, precision?: number): number;
+    divide(dividend: number, divisor: number): number;
+    floor(number: number, precision?: number): number;
+    max<T>(array: List<T>): T;
+    maxBy<T>(array: List<T>, iteratee: ValueIteratee<T>): T;
+    mean(array: List<number>): number;
+    meanBy(array: List<number>, iteratee: ValueIteratee<number>): number;
+    min<T>(array: List<T>): T;
+    minBy<T>(array: List<T>, iteratee: ValueIteratee<T>): T;
+    multiply(multiplier: number, multiplicand: number): number;
+    round(number: number, precision?: number): number;
+    subtract(minuend: number, subtrahend: number): number;
+    sum(array: List<number>): number;
+    sumBy<T>(array: List<T>, iteratee: ValueIteratee<T>): number;
+    clamp(number: number, lower: number, upper: number): number;
+    inRange(number: number, start: number, end: number): boolean;
+    random(lower?: number, upper?: number, floating?: boolean): number;
+    assign<T>(object: T, ...sources: object[]): T;
+    assignIn<T>(object: T, ...sources: object[]): T;
+    assignInWith<T>(object: T, ...sources: object[]): T;
+    assignWith<T>(object: T, ...sources: object[]): T;
+    at(object: object, paths: string[]): any[];
+    create(prototype: object, properties: object): object;
+    defaults<T>(object: T, ...sources: object[]): T;
+    defaultsDeep<T>(object: T, ...sources: object[]): T;
+    entries(object: object): [string, any][];
+    entriesIn(object: object): [string, any][];
+    extend(object: object, ...sources: object[]): object;
+    extendWith(object: object, ...sources: object[]): object;
+    findKey(object: object, predicate: ValueIteratee<any>): string;
+    findLastKey(object: object, predicate: ValueIteratee<any>): string;
+    forIn(object: object, iteratee: ValueIteratee<any>): object;
+    forInRight(object: object, iteratee: ValueIteratee<any>): object;
+    forOwn(object: object, iteratee: ValueIteratee<any>): object;
+    forOwnRight(object: object, iteratee: ValueIteratee<any>): object;
+    functions(object: object): string[];
+    functionsIn(object: object): string[];
+    get(object: object, path: string | string[], defaultValue?: any): any;
+    has(object: object, path: string | string[]): boolean;
+    hasIn(object: object, path: string | string[]): boolean;
+    invert(object: object): object;
+    invertBy(object: object, iteratee: ValueIteratee<any>): object;
+    invoke(object: object, path: string | string[], ...args: any[]): any;
+    keys(object: object): string[];
+    keysIn(object: object): string[];
+    mapKeys(object: object, iteratee: ValueIteratee<any>): object;
+    mapValues(object: object, iteratee: ValueIteratee<any>): object;
+    merge<T>(object: T, ...sources: object[]): T;
+    mergeWith<T>(object: T, ...sources: object[]): T;
+    omit(object: object, ...paths: string[]): object;
+    omitBy(object: object, predicate: ValueIteratee<any>): object;
+    pick(object: object, ...paths: string[]): object;
+    pickBy(object: object, predicate: ValueIteratee<any>): object;
+    result(object: object, path: string | string[], defaultValue?: any): any;
+    set(object: object, path: string | string[], value: any): object;
+    setWith(object: object, path: string | string[], value: any, customizer: (nsValue: any, key: string, nsObject: object) => any): object;
+    toPairs(object: object): [string, any][];
+    toPairsIn(object: object): [string, any][];
+    transform(object: object, iteratee: ValueIteratee<any>, accumulator?: any): any;
+    unset(object: object, path: string | string[]): boolean;
+    update(object: object, path: string | string[], updater: (value: any) => any): object;
+    updateWith(object: object, path: string | string[], updater: (value: any) => any, customizer: (nsValue: any, key: string, nsObject: object) => any): object;
+    values(object: object): any[];
+    valuesIn(object: object): any[];
+    chain(value: any): any;
+    tap(value: any, interceptor: (value: any) => void): any;
+    thru(value: any, interceptor: (value: any) => any): any;
+    camelCase(string: string): string;
+    capitalize(string: string): string;
+    deburr(string: string): string;
+    endsWith(string: string, target: string, position?: number): boolean;
+    escape(string: string): string;
+    escapeRegExp(string: string): string;
+    kebabCase(string: string): string;
+    lowerCase(string: string): string;
+    lowerFirst(string: string): string;
+    pad(string: string, length: number, chars?: string): string;
+    padEnd(string: string, length: number, chars?: string): string;
+    padStart(string: string, length: number, chars?: string): string;
+    parseInt(string: string, radix?: number): number;
+    repeat(string: string, n?: number): string;
+    replace(string: string, pattern: string | RegExp, replacement: string | ((substring: string, ...args: any[]) => string)): string;
+    snakeCase(string: string): string;
+    split(string: string, separator: string | RegExp, limit?: number): string[];
+    startCase(string: string): string;
+    startsWith(string: string, target: string, position?: number): boolean;
+    template(string: string, options?: TemplateOptions): (options: object) => string;
+    toLower(string: string): string;
+    toUpper(string: string): string;
+    trim(string: string, chars?: string): string;
+    trimEnd(string: string, chars?: string): string;
+    trimStart(string: string, chars?: string): string;
+    truncate(string: string, options?: TruncateOptions): string;
+    unescape(string: string): string;
+    upperCase(string: string): string;
+    upperFirst(string: string): string;
+    words(string: string, pattern?: RegExp): string[];
+    attempt(func: Function, ...args: any[]): any;
+    bindAll(object: object, methodNames: string[]): object;
+    cond(pairs: [Function, Function][]): Function;
+    conforms(source: object): Function;
+    constant<T>(value: T): () => T;
+    defaultTo<T, D>(value: T, defaultValue: D): T | D;
+    flow(funcs: Function[]): Function;
+    flowRight(funcs: Function[]): Function;
+    identity(value: any): any;
+    iteratee(value: any): Function;
+    matches(source: object): Function;
+    matchesProperty(path: string | string[], srcValue: any): Function;
+    method(path: string | string[], ...args: any[]): Function;
+    methodOf(object: object, ...args: any[]): Function;
+    mixin(object: object): Lodash;
+    noConflict(): Lodash;
+    noop(): void;
+    nthArg(n?: number): Function;
+    over(args: Function[]): Function;
+    overEvery(predicates: Function[]): Function;
+    overSome(predicates: Function[]): Function;
+    property(path: string | string[]): Function;
+    propertyOf(object: object): Function;
+    range(end: number): number[];
+    range(start: number, end: number, step?: number): number[];
+    rangeRight(end: number): number[];
+    rangeRight(start: number, end: number, step?: number): number[];
+    runInContext(): Lodash;
+    stubArray(): any[];
+    stubFalse(): false;
+    stubObject(): object;
+    stubString(): string;
+    stubTrue(): true;
+    times(n: number, iteratee: (index: number) => any): any[];
+    toPath(value: string | string[]): string[];
+    uniqueId(prefix?: string): string;
+    VERSION: string;
+    templateSettings: TemplateSettings;
+}
+
+// declare TemplateSettings
+interface TemplateSettings {
+    escape: RegExp;
+    evaluate: RegExp;
+    imports: object;
+    interpolate: RegExp;
+    variable: string;
+}
+
+interface TruncateOptions {
+    length?: number;
+    omission?: string;
+    separator?: RegExp | string;
+}
+interface TemplateOptions {
+    escape?: RegExp;
+    evaluate?: RegExp;
+    imports?: object;
+    interpolate?: RegExp;
+    variable?: string;
+}
+declare type Comparator<T> = (a: T, b: T) => boolean;
+declare type ValueIteratee<T> = (value: T) => any;
+interface List<T> {
+    [index: number]: T;
+    length: number;
+}
+
 declare interface Config {
     load (file: string, store?: string): Config;
     get (key: string, defaultValue?: any): any;
@@ -189,6 +529,550 @@ declare interface PhpBuilder {
     isExistsMethod (name: string): boolean;
     isExistsProperty (name: string): boolean;
     save (): Promise<void>;
+}
+
+interface RawAxiosHeaders {
+    [key: string]: axios.AxiosHeaderValue;
+}
+
+type MethodsHeaders = Partial<{
+    [Key in axios.Method as Lowercase<Key>]: AxiosHeaders;
+} & {common: AxiosHeaders}>;
+
+type AxiosHeaderMatcher = (this: AxiosHeaders, value: string, name: string, headers: RawAxiosHeaders) => boolean;
+
+type AxiosHeaderParser = (this: AxiosHeaders, value: axios.AxiosHeaderValue, header: string) => any;
+
+type CommonRequestHeadersList = 'Accept' | 'Content-Length' | 'User-Agent'| 'Content-Encoding' | 'Authorization';
+
+type ContentType = axios.AxiosHeaderValue | 'text/html' | 'text/plain' | 'multipart/form-data' | 'application/json' | 'application/x-www-form-urlencoded' | 'application/octet-stream';
+
+type CommonResponseHeadersList = 'Server' | 'Content-Type' | 'Content-Length' | 'Cache-Control'| 'Content-Encoding';
+
+declare class AxiosHeaders {
+    constructor(
+        headers?: RawAxiosHeaders | AxiosHeaders | string
+    );
+
+    [key: string]: any;
+
+    set(headerName?: string, value?: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+    set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
+
+    get(headerName: string, parser: RegExp): RegExpExecArray | null;
+    get(headerName: string, matcher?: true | AxiosHeaderParser): axios.AxiosHeaderValue;
+
+    has(header: string, matcher?: AxiosHeaderMatcher): boolean;
+
+    delete(header: string | string[], matcher?: AxiosHeaderMatcher): boolean;
+
+    clear(matcher?: AxiosHeaderMatcher): boolean;
+
+    normalize(format: boolean): AxiosHeaders;
+
+    concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>): AxiosHeaders;
+
+    toJSON(asStrings?: boolean): RawAxiosHeaders;
+
+    static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
+
+    static accessor(header: string | string[]): AxiosHeaders;
+
+    static concat(...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>): AxiosHeaders;
+
+    setContentType(value: ContentType, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+    getContentType(parser?: RegExp): RegExpExecArray | null;
+    getContentType(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
+    hasContentType(matcher?: AxiosHeaderMatcher): boolean;
+
+    setContentLength(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+    getContentLength(parser?: RegExp): RegExpExecArray | null;
+    getContentLength(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
+    hasContentLength(matcher?: AxiosHeaderMatcher): boolean;
+
+    setAccept(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+    getAccept(parser?: RegExp): RegExpExecArray | null;
+    getAccept(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
+    hasAccept(matcher?: AxiosHeaderMatcher): boolean;
+
+    setUserAgent(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+    getUserAgent(parser?: RegExp): RegExpExecArray | null;
+    getUserAgent(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
+    hasUserAgent(matcher?: AxiosHeaderMatcher): boolean;
+
+    setContentEncoding(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+    getContentEncoding(parser?: RegExp): RegExpExecArray | null;
+    getContentEncoding(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
+    hasContentEncoding(matcher?: AxiosHeaderMatcher): boolean;
+
+    setAuthorization(value: axios.AxiosHeaderValue, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
+    getAuthorization(parser?: RegExp): RegExpExecArray | null;
+    getAuthorization(matcher?: AxiosHeaderMatcher): axios.AxiosHeaderValue;
+    hasAuthorization(matcher?: AxiosHeaderMatcher): boolean;
+}
+
+declare class AxiosError<T = unknown, D = any> extends Error {
+    constructor(
+        message?: string,
+        code?: string,
+        config?: axios.InternalAxiosRequestConfig<D>,
+        request?: any,
+        response?: axios.AxiosResponse<T, D>
+    );
+
+    config?: axios.InternalAxiosRequestConfig<D>;
+    code?: string;
+    request?: any;
+    response?: axios.AxiosResponse<T, D>;
+    isAxiosError: boolean;
+    status?: number;
+    toJSON: () => object;
+    cause?: Error;
+    static readonly ERR_FR_TOO_MANY_REDIRECTS = "ERR_FR_TOO_MANY_REDIRECTS";
+    static readonly ERR_BAD_OPTION_VALUE = "ERR_BAD_OPTION_VALUE";
+    static readonly ERR_BAD_OPTION = "ERR_BAD_OPTION";
+    static readonly ERR_NETWORK = "ERR_NETWORK";
+    static readonly ERR_DEPRECATED = "ERR_DEPRECATED";
+    static readonly ERR_BAD_RESPONSE = "ERR_BAD_RESPONSE";
+    static readonly ERR_BAD_REQUEST = "ERR_BAD_REQUEST";
+    static readonly ERR_NOT_SUPPORT = "ERR_NOT_SUPPORT";
+    static readonly ERR_INVALID_URL = "ERR_INVALID_URL";
+    static readonly ERR_CANCELED = "ERR_CANCELED";
+    static readonly ECONNABORTED = "ECONNABORTED";
+    static readonly ETIMEDOUT = "ETIMEDOUT";
+}
+
+declare class CanceledError<T> extends AxiosError<T> {
+}
+
+declare class Axios {
+    constructor(config?: axios.AxiosRequestConfig);
+    defaults: axios.AxiosDefaults;
+    interceptors: {
+        request: axios.AxiosInterceptorManager<axios.InternalAxiosRequestConfig>;
+        response: axios.AxiosInterceptorManager<axios.AxiosResponse>;
+    };
+    getUri(config?: axios.AxiosRequestConfig): string;
+    request<T = any, R = axios.AxiosResponse<T>, D = any>(config: axios.AxiosRequestConfig<D>): Promise<R>;
+    get<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+    delete<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+    head<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+    options<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+    post<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+    put<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+    patch<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+    postForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+    putForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+    patchForm<T = any, R = axios.AxiosResponse<T>, D = any>(url: string, data?: D, config?: axios.AxiosRequestConfig<D>): Promise<R>;
+}
+
+declare enum HttpStatusCode {
+    Continue = 100,
+    SwitchingProtocols = 101,
+    Processing = 102,
+    EarlyHints = 103,
+    Ok = 200,
+    Created = 201,
+    Accepted = 202,
+    NonAuthoritativeInformation = 203,
+    NoContent = 204,
+    ResetContent = 205,
+    PartialContent = 206,
+    MultiStatus = 207,
+    AlreadyReported = 208,
+    ImUsed = 226,
+    MultipleChoices = 300,
+    MovedPermanently = 301,
+    Found = 302,
+    SeeOther = 303,
+    NotModified = 304,
+    UseProxy = 305,
+    Unused = 306,
+    TemporaryRedirect = 307,
+    PermanentRedirect = 308,
+    BadRequest = 400,
+    Unauthorized = 401,
+    PaymentRequired = 402,
+    Forbidden = 403,
+    NotFound = 404,
+    MethodNotAllowed = 405,
+    NotAcceptable = 406,
+    ProxyAuthenticationRequired = 407,
+    RequestTimeout = 408,
+    Conflict = 409,
+    Gone = 410,
+    LengthRequired = 411,
+    PreconditionFailed = 412,
+    PayloadTooLarge = 413,
+    UriTooLong = 414,
+    UnsupportedMediaType = 415,
+    RangeNotSatisfiable = 416,
+    ExpectationFailed = 417,
+    ImATeapot = 418,
+    MisdirectedRequest = 421,
+    UnprocessableEntity = 422,
+    Locked = 423,
+    FailedDependency = 424,
+    TooEarly = 425,
+    UpgradeRequired = 426,
+    PreconditionRequired = 428,
+    TooManyRequests = 429,
+    RequestHeaderFieldsTooLarge = 431,
+    UnavailableForLegalReasons = 451,
+    InternalServerError = 500,
+    NotImplemented = 501,
+    BadGateway = 502,
+    ServiceUnavailable = 503,
+    GatewayTimeout = 504,
+    HttpVersionNotSupported = 505,
+    VariantAlsoNegotiates = 506,
+    InsufficientStorage = 507,
+    LoopDetected = 508,
+    NotExtended = 510,
+    NetworkAuthenticationRequired = 511,
+}
+
+type InternalAxiosError<T = unknown, D = any> = AxiosError<T, D>;
+
+declare namespace axios {
+    type AxiosError<T = unknown, D = any> = InternalAxiosError<T, D>;
+
+    type RawAxiosRequestHeaders = Partial<RawAxiosHeaders & {
+        [Key in CommonRequestHeadersList]: AxiosHeaderValue;
+    } & {
+        'Content-Type': ContentType
+    }>;
+
+    type AxiosRequestHeaders = RawAxiosRequestHeaders & AxiosHeaders;
+
+    type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
+
+    type RawCommonResponseHeaders = {
+        [Key in CommonResponseHeadersList]: AxiosHeaderValue;
+    } & {
+        "set-cookie": string[];
+    };
+
+    type RawAxiosResponseHeaders = Partial<RawAxiosHeaders & RawCommonResponseHeaders>;
+
+    type AxiosResponseHeaders = RawAxiosResponseHeaders & AxiosHeaders;
+
+    interface AxiosRequestTransformer {
+        (this: InternalAxiosRequestConfig, data: any, headers: AxiosRequestHeaders): any;
+    }
+
+    interface AxiosResponseTransformer {
+        (this: InternalAxiosRequestConfig, data: any, headers: AxiosResponseHeaders, status?: number): any;
+    }
+
+    interface AxiosAdapter {
+        (config: InternalAxiosRequestConfig): AxiosPromise;
+    }
+
+    interface AxiosBasicCredentials {
+        username: string;
+        password: string;
+    }
+
+    interface AxiosProxyConfig {
+        host: string;
+        port: number;
+        auth?: AxiosBasicCredentials;
+        protocol?: string;
+    }
+
+    type Method =
+        | 'get' | 'GET'
+        | 'delete' | 'DELETE'
+        | 'head' | 'HEAD'
+        | 'options' | 'OPTIONS'
+        | 'post' | 'POST'
+        | 'put' | 'PUT'
+        | 'patch' | 'PATCH'
+        | 'purge' | 'PURGE'
+        | 'link' | 'LINK'
+        | 'unlink' | 'UNLINK';
+
+    type ResponseType =
+        | 'arraybuffer'
+        | 'blob'
+        | 'document'
+        | 'json'
+        | 'text'
+        | 'stream'
+        | 'formdata';
+
+    type responseEncoding =
+        | 'ascii' | 'ASCII'
+        | 'ansi' | 'ANSI'
+        | 'binary' | 'BINARY'
+        | 'base64' | 'BASE64'
+        | 'base64url' | 'BASE64URL'
+        | 'hex' | 'HEX'
+        | 'latin1' | 'LATIN1'
+        | 'ucs-2' | 'UCS-2'
+        | 'ucs2' | 'UCS2'
+        | 'utf-8' | 'UTF-8'
+        | 'utf8' | 'UTF8'
+        | 'utf16le' | 'UTF16LE';
+
+    interface TransitionalOptions {
+        silentJSONParsing?: boolean;
+        forcedJSONParsing?: boolean;
+        clarifyTimeoutError?: boolean;
+    }
+
+    interface GenericAbortSignal {
+        readonly aborted: boolean;
+        onabort?: ((...args: any) => any) | null;
+        addEventListener?: (...args: any) => any;
+        removeEventListener?: (...args: any) => any;
+    }
+
+    interface FormDataVisitorHelpers {
+        defaultVisitor: SerializerVisitor;
+        convertValue: (value: any) => any;
+        isVisitable: (value: any) => boolean;
+    }
+
+    interface SerializerVisitor {
+        (
+            this: GenericFormData,
+            value: any,
+            key: string | number,
+            path: null | Array<string | number>,
+            helpers: FormDataVisitorHelpers
+        ): boolean;
+    }
+
+    interface SerializerOptions {
+        visitor?: SerializerVisitor;
+        dots?: boolean;
+        metaTokens?: boolean;
+        indexes?: boolean | null;
+    }
+
+    // tslint:disable-next-line
+    interface FormSerializerOptions extends SerializerOptions {
+    }
+
+    interface ParamEncoder {
+        (value: any, defaultEncoder: (value: any) => any): any;
+    }
+
+    interface CustomParamsSerializer {
+        (params: Record<string, any>, options?: ParamsSerializerOptions): string;
+    }
+
+    interface ParamsSerializerOptions extends SerializerOptions {
+        encode?: ParamEncoder;
+        serialize?: CustomParamsSerializer;
+    }
+
+    type MaxUploadRate = number;
+
+    type MaxDownloadRate = number;
+
+    type BrowserProgressEvent = any;
+
+    interface AxiosProgressEvent {
+        loaded: number;
+        total?: number;
+        progress?: number;
+        bytes: number;
+        rate?: number;
+        estimated?: number;
+        upload?: boolean;
+        download?: boolean;
+        event?: BrowserProgressEvent;
+        lengthComputable: boolean;
+    }
+
+    type Milliseconds = number;
+
+    type AxiosAdapterName = 'fetch' | 'xhr' | 'http' | string;
+
+    type AxiosAdapterConfig = AxiosAdapter | AxiosAdapterName;
+
+    type AddressFamily = 4 | 6 | undefined;
+
+    interface LookupAddressEntry {
+        address: string;
+        family?: AddressFamily;
+    }
+
+    type LookupAddress = string | LookupAddressEntry;
+
+    interface AxiosRequestConfig<D = any> {
+        url?: string;
+        method?: Method | string;
+        baseURL?: string;
+        transformRequest?: AxiosRequestTransformer | AxiosRequestTransformer[];
+        transformResponse?: AxiosResponseTransformer | AxiosResponseTransformer[];
+        headers?: (RawAxiosRequestHeaders & MethodsHeaders) | AxiosHeaders;
+        params?: any;
+        paramsSerializer?: ParamsSerializerOptions | CustomParamsSerializer;
+        data?: D;
+        timeout?: Milliseconds;
+        timeoutErrorMessage?: string;
+        withCredentials?: boolean;
+        adapter?: AxiosAdapterConfig | AxiosAdapterConfig[];
+        auth?: AxiosBasicCredentials;
+        responseType?: ResponseType;
+        responseEncoding?: responseEncoding | string;
+        xsrfCookieName?: string;
+        xsrfHeaderName?: string;
+        onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
+        onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void;
+        maxContentLength?: number;
+        validateStatus?: ((status: number) => boolean) | null;
+        maxBodyLength?: number;
+        maxRedirects?: number;
+        maxRate?: number | [MaxUploadRate, MaxDownloadRate];
+        beforeRedirect?: (options: Record<string, any>, responseDetails: {headers: Record<string, string>, statusCode: HttpStatusCode}) => void;
+        socketPath?: string | null;
+        transport?: any;
+        httpAgent?: any;
+        httpsAgent?: any;
+        proxy?: AxiosProxyConfig | false;
+        cancelToken?: CancelToken;
+        decompress?: boolean;
+        transitional?: TransitionalOptions;
+        signal?: GenericAbortSignal;
+        insecureHTTPParser?: boolean;
+        env?: {
+            FormData?: new (...args: any[]) => object;
+        };
+        formSerializer?: FormSerializerOptions;
+        family?: AddressFamily;
+        lookup?: ((hostname: string, options: object, cb: (err: Error | null, address: LookupAddress | LookupAddress[], family?: AddressFamily) => void) => void) |
+            ((hostname: string, options: object) => Promise<[address: LookupAddressEntry | LookupAddressEntry[], family?: AddressFamily] | LookupAddress>);
+        withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
+        fetchOptions?: Record<string, any>;
+    }
+
+    // Alias
+    type RawAxiosRequestConfig<D = any> = AxiosRequestConfig<D>;
+
+    interface InternalAxiosRequestConfig<D = any> extends AxiosRequestConfig {
+        headers: AxiosRequestHeaders;
+    }
+
+    interface HeadersDefaults {
+        common: RawAxiosRequestHeaders;
+        delete: RawAxiosRequestHeaders;
+        get: RawAxiosRequestHeaders;
+        head: RawAxiosRequestHeaders;
+        post: RawAxiosRequestHeaders;
+        put: RawAxiosRequestHeaders;
+        patch: RawAxiosRequestHeaders;
+        options?: RawAxiosRequestHeaders;
+        purge?: RawAxiosRequestHeaders;
+        link?: RawAxiosRequestHeaders;
+        unlink?: RawAxiosRequestHeaders;
+    }
+
+    interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
+        headers: HeadersDefaults;
+    }
+
+    interface CreateAxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
+        headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
+    }
+
+    interface AxiosResponse<T = any, D = any>  {
+        data: T;
+        status: number;
+        statusText: string;
+        headers: RawAxiosResponseHeaders | AxiosResponseHeaders;
+        config: InternalAxiosRequestConfig<D>;
+        request?: any;
+    }
+
+    type AxiosPromise<T = any> = Promise<AxiosResponse<T>>;
+
+    interface CancelStatic {
+        new (message?: string): Cancel;
+    }
+
+    interface Cancel {
+        message: string | undefined;
+    }
+
+    interface Canceler {
+        (message?: string, config?: AxiosRequestConfig, request?: any): void;
+    }
+
+    interface CancelTokenStatic {
+        new (executor: (cancel: Canceler) => void): CancelToken;
+        source(): CancelTokenSource;
+    }
+
+    interface CancelToken {
+        promise: Promise<Cancel>;
+        reason?: Cancel;
+        throwIfRequested(): void;
+    }
+
+    interface CancelTokenSource {
+        token: CancelToken;
+        cancel: Canceler;
+    }
+
+    interface AxiosInterceptorOptions {
+        synchronous?: boolean;
+        runWhen?: (config: InternalAxiosRequestConfig) => boolean;
+    }
+
+    type AxiosRequestInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null, options?: AxiosInterceptorOptions) => number;
+
+    type AxiosResponseInterceptorUse<T> = (onFulfilled?: ((value: T) => T | Promise<T>) | null, onRejected?: ((error: any) => any) | null) => number;
+
+    interface AxiosInterceptorManager<V> {
+        use: V extends AxiosResponse ? AxiosResponseInterceptorUse<V> : AxiosRequestInterceptorUse<V>;
+        eject(id: number): void;
+        clear(): void;
+    }
+
+    interface AxiosInstance extends Axios {
+        <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R>;
+        <T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+
+        defaults: Omit<AxiosDefaults, 'headers'> & {
+            headers: HeadersDefaults & {
+                [key: string]: AxiosHeaderValue
+            }
+        };
+    }
+
+    interface GenericFormData {
+        append(name: string, value: any, options?: any): any;
+    }
+
+    interface GenericHTMLFormElement {
+        name: string;
+        method: string;
+        submit(): void;
+    }
+
+    interface AxiosStatic extends AxiosInstance {
+        create(config?: CreateAxiosDefaults): AxiosInstance;
+        Cancel: CancelStatic;
+        CancelToken: CancelTokenStatic;
+        Axios: typeof Axios;
+        AxiosError: typeof AxiosError;
+        CanceledError: typeof CanceledError;
+        HttpStatusCode: typeof HttpStatusCode;
+        readonly VERSION: string;
+        isCancel(value: any): value is Cancel;
+        all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
+        spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
+        isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
+        toFormData(sourceObj: object, targetFormData?: GenericFormData, options?: FormSerializerOptions): GenericFormData;
+        formToJSON(form: GenericFormData|GenericHTMLFormElement): object;
+        getAdapter(adapters: AxiosAdapterConfig | AxiosAdapterConfig[] | undefined): AxiosAdapter;
+        AxiosHeaders: typeof AxiosHeaders;
+    }
 }
 
 declare namespace loading {
