@@ -75,6 +75,10 @@ module.exports = class Command {
         return this.commander.opts().quiet;
     }
 
+    get commandDocumentation () {
+        return '';
+    }
+
     constructor(program, commander, config, commandFile, commandFindPath) {
         this.program = program;
         this.commander = commander;
@@ -184,11 +188,11 @@ module.exports = class Command {
         return out.flat().join("\n");
     }
 
-    async spawn (command, args = [], dir = this.pwd, stdio = 'inherit') {
+    async spawn (command, args = [], dir = this.pwd, stdio = 'inherit', env = process.env) {
         const cmdText = `${command} ${args.join(' ')}`;
         this.log(`Run cli command: ` + cmdText, 1);
         return new Promise((resolve, reject) => {
-            const child = spawn(command, args, {stdio, cwd: dir});
+            const child = spawn(command, args, {stdio, cwd: dir, env});
 
             let stdout = '';
             let stderr = '';
