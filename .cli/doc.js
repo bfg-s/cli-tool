@@ -2,7 +2,7 @@ module.exports = class Doc extends process.Command {
 
     commandName = 'doc <command>';
 
-    commandDescription = 'Unknown command';
+    commandDescription = 'Command for get documentation for command';
 
     commandOptions = [];
 
