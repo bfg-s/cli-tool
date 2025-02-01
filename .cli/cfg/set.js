@@ -1,6 +1,6 @@
 module.exports = class Set extends process.Command {
 
-    commandName = 'cfg:set <name> <value>';
+    commandName = 'cfg:set <name> [value]';
 
     commandDescription = 'Command for set config value';
 
@@ -21,6 +21,6 @@ module.exports = class Set extends process.Command {
 
         this.config.setToStore(this.options.store, this.arguments.name, this.arguments.value);
 
-        this.info('Config value set.');
+        this.info('Config value set successfully!');
     }
 }

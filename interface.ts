@@ -471,6 +471,7 @@ interface List<T> {
 }
 
 declare interface Config {
+    store: object;
     load (file: string, store?: string): Config;
     get (key: string, defaultValue?: any): any;
     set (key: string, value: any): void;

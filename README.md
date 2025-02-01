@@ -45,6 +45,46 @@ cli make:command <command-name>
 ```
 The command will be created and available only in the folder in which you execute the command to create. If you want the command to be global, create commands in the user's home directory.
 
+### Config (show, set, remove, edit)
+To work with the configuration, you need to run the following command in the terminal:
+
+#### set
+Use the following command to set a configuration:
+```bash
+cli cfg:set <name> <value>
+```
+```
+-s, --store <store>  Set store for config save (default: "tmp")
+```
+
+#### show
+To show a configuration, use the following command:
+```bash
+cli cfg:show <name> 
+```
+You can show all configurations:
+```bash
+cli cfg:show
+```
+
+#### remove
+To remove a configuration, use the following command:
+```bash
+cli cfg:remove <name>
+```
+```
+-s, --store <store>  Set store for config save (default: "tmp")
+```
+
+#### edit
+To edit a configuration file, use the following command:
+```bash
+cli cfg:edit
+```
+```
+-s, --store <store>  Set store for config save (default: "tmp")
+```
+
 ### Git (pull, push, reset, tag, untag)
 To work with the git repository, you need to run the following command in the terminal:
 ```bash
@@ -68,6 +108,7 @@ cli find [value-in-files]
 -m, --min <size>        File min size in bytes or (1B, 1K, 1M, 1G, 1T)
 -c, --created <date>    File created date
 -u, --updated <date>    File updated date
+-j, --json              Output as JSON
 ```
 You can search for a file by name or text in a file. The search is recursive and is performed in the current directory.
 
@@ -128,22 +169,4 @@ cli parallel "command1" "x10 command2" "command3" --create --file my_commands
 After that, you can run the commands from the file:
 ```bash
 cli parallel --file my_commands
-```
-
-### Config (show, set)
-To work with the configuration, you need to run the following command in the terminal:
-#### set
-```bash
-cli cfg:set <name> <value>
-```
-```
--s, --store <store>  Set store for config save (default: "tmp")
-```
-#### show
-```bash
-cli cfg:show <name> 
-```
-You can show all configurations:
-```bash
-cli cfg:show
 ```
