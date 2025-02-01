@@ -2,6 +2,7 @@ export interface Command {
     moment(): moment.Moment;
     lodash: Lodash;
     axios: Axios;
+    format (format: string, ...args: any[]): string;
     path: {
         join: (...paths: string[]) => string;
     };
@@ -12,6 +13,8 @@ export interface Command {
         copy: (src: string, dest: string) => void;
         statistic: (path: string) => {};
         base_path: (...path: string[]) => string;
+        tmp_path: (...path: string[]) => string;
+        tmp_file: () => string;
         dirname: (path: string) => string;
         read_all_dir: (dir: string) => any[];
         read_dir: (dir: string) => string[];
@@ -76,6 +79,7 @@ export interface Command {
         trim: (str: string, charlist?: string) => string;
         number_format: (num: number, decimals?: number, dec_point?: string, thousands_sep?: string) => string;
         http_build_query: (obj: object, num_prefix?: string, temp_key?: string) => string;
+        is_json: (str: any) => boolean;
     };
     num: {
         isNumber: (num: any) => boolean;
@@ -99,6 +103,7 @@ export interface Command {
     phpBuilder (file: string): PhpBuilder;
 
     is_windows(): boolean;
+    editor (file?: string, tmp?: boolean): Promise<string>;
     stub (stub: string, params: object): string;
     put_stub (file: string, stub: string, params?: object): Promise<void>;
     js_ext (dir?: string): "js" | "cjs";

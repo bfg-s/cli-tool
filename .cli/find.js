@@ -14,6 +14,7 @@ module.exports = class Find extends process.Command {
         ['-m, --min <size>', 'File min size in bytes or (1B, 1K, 1M, 1G, 1T)'],
         ['-c, --created <date>', 'File created date'],
         ['-u, --updated <date>', 'File updated date'],
+        ['-j, --json', 'Output as JSON'],
     ];
 
     options = {
@@ -23,6 +24,7 @@ module.exports = class Find extends process.Command {
         min: null,
         created: null,
         updated: null,
+        json: false,
     };
 
     arguments = {
@@ -41,20 +43,33 @@ module.exports = class Find extends process.Command {
 
         if (this.arguments.valueInFiles) {
             result = await this.findInFiles(this.arguments.valueInFiles);
-            console.log(`Matches: `.green + this.matches);
+            if (! this.options.json) {
+                this.line(`Matches: `.green + this.matches);
+            }
         } else {
             result = await this.findFiles(this.options.file || '*');
         }
 
-        if (! result.length) {
-            this.warn('Nothing found!');
-        } else {
-            console.log('Files: '.green + result.length);
-        }
-
         const endTime = Date.now();
         const time = (endTime - this.program.startTime) / 1000;
-        console.log(`Time: `.green + `${time} sec`);
+
+        if (! this.options.json) {
+
+            if (! result.length) {
+                this.warn('Nothing found!');
+            } else {
+                this.line('Files: '.green + result.length);
+            }
+
+            this.line(`Time: `.green + `${time} sec`);
+        } else {
+            this.line(JSON.stringify({
+                result,
+                ...(this.arguments.valueInFiles ? {matches: this.matches} : {}),
+                files: result.length,
+                time,
+            }, null, 2));
+        }
     }
 
     async findFiles(fileMask) {
@@ -68,7 +83,9 @@ module.exports = class Find extends process.Command {
                 && this.str.is(fileMask, relativePath)
             ) {
                 this.fileLine(file, searchInFile);
-                return true;
+                return {
+                    dir, file, relativePath
+                };
             }
             return false;
         });
@@ -95,23 +112,33 @@ module.exports = class Find extends process.Command {
                     if (this.str.is(value, content)) {
 
                         let lenFileLine = this.fileLine(file, searchInFile);
+                        const findRows = [];
                         content.split('\n').forEach((line, n) => {
                             line = line.trim();
                             if (this.str.is(value, line)) {
                                 n++;
-                                const len = String(n).length;
-                                let minLen = 6;
-                                if (len > minLen) {minLen = 12;}
-                                if (len > minLen) {minLen = 18;}
-                                if (len > minLen) {minLen = 24;}
-                                const spacesLen = minLen - len;
-                                const spaces = ` `.repeat(spacesLen > 0 ? spacesLen : 1);
-                                const num = `[:${n}]`;
-                                this.line(num.green + spaces + `${this.replaceToColor(line, searchInContent, true)}`);
+                                if (! this.options.json) {
+                                    const len = String(n).length;
+                                    let minLen = 6;
+                                    if (len > minLen) minLen = 12;
+                                    if (len > minLen) minLen = 18;
+                                    if (len > minLen) minLen = 24;
+                                    const spacesLen = minLen - len;
+                                    const spaces = ` `.repeat(spacesLen > 0 ? spacesLen : 1);
+                                    const num = `[:${n}]`;
+                                    this.line(num.green + spaces + `${this.replaceToColor(line, searchInContent, true)}`);
+                                } else {
+                                    this.replaceToColor(line, searchInContent, true);
+                                }
+                                findRows.push({line: n, content: line});
                             }
                         });
-                        this.line('-'.repeat(lenFileLine).blue);
-                        return true;
+                        if (! this.options.json) {
+                            this.line('-'.repeat(lenFileLine).blue);
+                        }
+                        return findRows.length ? {
+                            file, lines: findRows
+                        } : false;
                     }
                     return false;
                 });
@@ -154,7 +181,7 @@ module.exports = class Find extends process.Command {
                             return null;
                         }
                         const r = await cb(name, stat);
-                        return r ? [name] : null;
+                        return r ? [r] : null;
                     })
                 );
                 return allFiles.filter(Boolean).flat().filter(Boolean);
@@ -168,15 +195,15 @@ module.exports = class Find extends process.Command {
     async readFileContentStream(filePath, data) {
         return new Promise((resolve, reject) => {
             const stream = fs.createReadStream(filePath, { encoding: 'utf8' });
-            let isTrue = false;
+            let resolveData = false;
             stream.on('data', (chunk) => {
                 if (chunk instanceof Buffer) {
                     chunk = chunk.toString('utf8');
                 }
                 const r = data(chunk);
-                if (r) isTrue = true;
+                if (r) resolveData = r;
             });
-            stream.on('end', () => resolve(isTrue));
+            stream.on('end', () => resolve(resolveData));
             stream.on('error', reject);
         });
     }
@@ -261,7 +288,7 @@ module.exports = class Find extends process.Command {
                     result.setSeconds(result.getSeconds() + value);
                     break;
                 default:
-                    throw new Error(`Unsupported unit: ${unit}`);
+                    this.exit(`Unsupported unit: ${unit}`);
             }
 
             return result;
@@ -275,7 +302,7 @@ module.exports = class Find extends process.Command {
         const match = /^(\d+(?:\.\d+)?)([BKMGTP]?)$/i.exec(sizeStr.trim());
 
         if (!match) {
-            throw new Error(`Invalid size format: ${sizeStr}`);
+            this.exit(`Invalid size format: ${sizeStr}`);
         }
 
         const [ , value, unit ] = match;
@@ -301,7 +328,9 @@ module.exports = class Find extends process.Command {
 
     fileLine(file, search) {
         const first = `[#${++this.fileNums}] `;
-        this.info(first.green + this.replaceToColor(file, search));
+        if (! this.options.json) {
+            this.info(first.green + this.replaceToColor(file, search));
+        }
         return String(first+file).length;
     }
 

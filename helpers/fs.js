@@ -22,6 +22,14 @@ module.exports = class Fs {
         return path.join(this.pwd, ...parts);
     }
 
+    tmp_path (...parts) {
+        return path.join(os.tmpdir(), ...parts);
+    }
+
+    tmp_file () {
+        return this.tmp_path(`tmp-${Math.random().toString(36).substring(7)}.tmp`);
+    }
+
     dirname(path) {
         const normalizedPath = String(path).replace(/\\/g, '/');
         if (os.platform() === 'win32') {

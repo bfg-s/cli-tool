@@ -71,7 +71,7 @@ module.exports = class Program {
 
         this.log(`Create command ${command.path}...`);
 
-        command = new command.class(this, program, this.config, command.path, path);
+        command = new command.class(this, program, this.config, command.path, path, rl);
 
         return command;
     }
@@ -190,13 +190,7 @@ module.exports = class Program {
     }
 
     async run() {
-        rl.on('SIGINT', () => {
-            this.log('Received SIGINT signal');
-            process.exit();
-        });
-
         await program.parseAsync(process.argv);
-
         process.exit();
     }
 }

@@ -277,4 +277,14 @@ module.exports = class Str {
 
         return output_string.join('&');
     }
+
+    is_json (str) {
+        if (typeof str === 'string' && str) {
+            try {
+                return JSON.parse(str);
+            } catch (e) {
+            }
+        }
+        return new Error('Not a JSON');
+    }
 }

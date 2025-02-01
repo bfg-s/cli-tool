@@ -12,10 +12,12 @@ const str = require('./helpers/str');
 const num = require('./helpers/num');
 const git = require('./helpers/git');
 const argv = require('string-argv');
-const readline = require('readline');
-const rl = readline.createInterface({input: process.stdin, output: process.stdout});
-
+const format = require( 'string-kit' ).format;
 const PhpBuilder = require('bfg-js-comcode');
+const readline = require('readline');
+const { cursor, beep, erase, screen} = require('sisteransi');
+const originalWrite = process.stdout.write;
+const originalExit = process.exit;
 
 function promiseFromChildProcess(child, out = []) {
     return new Promise(function (resolve, reject) {
@@ -79,7 +81,7 @@ module.exports = class Command {
         return '';
     }
 
-    constructor(program, commander, config, commandFile, commandFindPath) {
+    constructor(program, commander, config, commandFile, commandFindPath, rl) {
         this.program = program;
         this.commander = commander;
         this.config = config;
@@ -88,6 +90,7 @@ module.exports = class Command {
         this.moment = moment;
         this.lodash = lodash;
         this.axios = axios;
+        this.format = format;
 
         this.fs = new fs(this);
         this.str = new str(this);
@@ -98,6 +101,8 @@ module.exports = class Command {
         this.commandFile = commandFile;
         this.commandFilePath = this.fs.dirname(commandFile);
         this.commandFindPath = commandFindPath;
+
+        this.rl = rl;
 
         this.STATUS_OK = 0;
         this.STATUS_ERROR = 1;
@@ -127,6 +132,43 @@ module.exports = class Command {
         return this.str.replace_tags(
             this.fs.get_contents(file), params
         );
+    }
+
+    async editor (file = null, tmp = false) {
+
+        if (! file) {
+            file = this.fs.tmp_file();
+            tmp = true;
+        }
+
+        let editor = this.config.get('editor', null);
+
+        if (! editor) {
+            editor = (await this.prompts({
+                type: 'select',
+                name: 'value',
+                message: 'Select editor',
+                choices: [
+                    {title: 'mcedit', value: 'mcedit'},
+                    {title: 'nano', value: 'nano'},
+                    {title: 'vi', value: 'vi'},
+                    {title: 'vim', value: 'vim'},
+                    {title: 'emacs', value: 'emacs'},
+                ]
+            })).value;
+
+            this.config.setToStore('tmp', 'editor', editor);
+        }
+
+        await this.withoutRedLine(this.spawn(editor, [file]));
+
+        const hasFile = this.fs.is_file(file);
+
+        const result = hasFile ? this.fs.get_contents(file) : '';
+
+        if (tmp && hasFile) { this.fs.unlink(file); }
+
+        return result;
     }
 
     async put_stub (file, stub, params = {}) {
@@ -188,11 +230,41 @@ module.exports = class Command {
         return out.flat().join("\n");
     }
 
+    async redLinePause (execute) {
+        let result = null;
+        this.rl.pause();
+        if (execute instanceof Promise) {
+            result = await execute;
+        } else {
+            result = await execute();
+        }
+        this.rl.resume();
+        return result;
+    }
+
+    async withoutRedLine (execute) {
+        let result = null;
+        this.rl.close();
+        this.rl = null;
+        if (execute instanceof Promise) {
+            result = await execute;
+        } else {
+            result = await execute();
+        }
+        this.rl = readline.createInterface({input: process.stdin, output: process.stdout});
+        this.makeSIGINT();
+        return result;
+    }
+
     async spawn (command, args = [], dir = this.pwd, stdio = 'inherit', env = process.env) {
         const cmdText = `${command} ${args.join(' ')}`;
         this.log(`Run cli command: ` + cmdText, 1);
         return new Promise((resolve, reject) => {
-            const child = spawn(command, args, {stdio, cwd: dir, env});
+            const child = spawn(command, args, {
+                stdio,
+                cwd: dir,
+                env,
+            });
 
             let stdout = '';
             let stderr = '';
@@ -351,24 +423,54 @@ module.exports = class Command {
     }
 
     async call (command, ...args) {
-        const parsed = this.parseCommand(command);
-        parsed.args.push(...args);
-        return await this.commander.parseAsync([process.argv[0], process.argv[1], parsed.program, ...parsed.args])
+
+        const result = await this.spawn('cli', [command, ...args], this.pwd, null);
+
+        if (result.stderr) {
+            return result.stderr;
+        }
+        const stdout = result.stdout.trim();
+        const json = this.str.is_json(stdout);
+
+        if (json instanceof Error) {
+            return stdout;
+        }
+
+        return json;
+    }
+
+    async captureStdout(callback) {
+        let buffer = '';
+        process.stdout.write = (chunk, encoding, cb) => {
+            buffer += chunk;
+        };
+
+        await callback();
+
+        process.stdout.write = originalWrite;
+
+        return buffer;
+    }
+
+    makeSIGINT () {
+        this.rl.on('SIGINT', () => {
+            this.outsFunction.map((out) => {
+                out();
+            });
+            this.log('Received SIGINT signal in command.');
+            process.exit();
+        });
     }
 
     async _defaultAction (args, cmd) {
+
+        this.makeSIGINT();
 
         const requiredKeys = Object.keys(this.required);
 
         for (const key of requiredKeys) {
             this[key] = await this._requireForce(this.required[key]);
         }
-
-        rl.on('SIGINT', () => {
-            this.outsFunction.map((out) => {
-                out();
-            });
-        });
 
         const options = cmd.opts();
 
@@ -418,7 +520,6 @@ module.exports = class Command {
         } catch (e) {
             if (e.code === 'MODULE_NOT_FOUND') {
                 this.log(`Module ${module} not found. Try to install...`);
-                //execSync(`npm install -g ${module}`);
                 await this.spawn('npm', ['install', '-g', module]);
                 try {
                     this.log(`Try to require module: ${module} again`);
