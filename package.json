@@ -16,6 +16,7 @@
     "cli-table3": "^0.6.5",
     "colors": "^1.4.0",
     "commander": "^13.0.0",
+    "dotenv": "^16.4.7",
     "loading-cli": "^1.1.2",
     "lodash": "^4.17.21",
     "md5": "^2.3.0",

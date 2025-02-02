@@ -32,8 +32,12 @@ module.exports = new class Config {
     }
 
     get (key, defaultValue = null) {
-        const value = obj.get(key, this.data);
+        let value = obj.get(key, this.data);
         if (value !== undefined) {
+            const matches = /^\$\{[E|e][N|n][V|v]\.([a-zA-Z0-9_\-]+)(?:\s*([|]{2})\s*(.*)?)?}$/gm.exec(value);
+            if (matches) {
+                value = process.env[matches[1]] || matches[3] || null;
+            }
             return value;
         }
         return typeof defaultValue === 'function'

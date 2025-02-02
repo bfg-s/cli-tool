@@ -126,6 +126,11 @@ module.exports = class Fs {
         return json;
     }
 
+    set_json_contents (file, json) {
+        if (Array.isArray(file)) file = path.join(...file);
+        return this.put_contents(file, JSON.stringify(json, null, 4));
+    }
+
     update_json (file, key, value) {
         if (Array.isArray(file)) file = path.join(...file);
         const data = this.get_json_contents(file, {});

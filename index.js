@@ -11,6 +11,8 @@ const tmpPath = path.join(os.tmpdir(), rootDirName);
 const Scanner = require('./scanner');
 const ProgramClass = require('./program');
 
+require('dotenv').config({ path: path.join(process.cwd(), '.env') });
+
 ProgramClass.log('Running...');
 ProgramClass.log('Load configs...');
 

@@ -29,6 +29,7 @@ export interface Command {
         append_contents: (path: string, data: string, options?: {}) => void;
         get_contents: (file: string) => string;
         get_json_contents: (file: string, defaultJson?: any) => any;
+        set_json_contents: (file: string, json: any) => void;
         update_json: (file: string, key: string, value: any) => void;
         delete_json_key: (file: string, key: string) => void;
         pathinfo: (path: string, options: string|number) => any;
