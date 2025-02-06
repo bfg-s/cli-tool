@@ -27,6 +27,7 @@ module.exports = class Program {
         this.config = config;
         this.program = program;
         this.startTime = startTime;
+        this.initedInstances = {};
     }
 
     prepare () {
@@ -83,11 +84,11 @@ module.exports = class Program {
         const options = command.commandOptions;
         const name = command.commandName;
 
+        this.initedInstances[command.constructor.name] = command;
+
         this.log(`Setup command ${name}...`);
 
         this._deleteExistsCommand(name);
-
-
 
         const cmd = program.command(name);
 
@@ -166,27 +167,27 @@ module.exports = class Program {
         );
     }
 
-    log(message) {
-        this.constructor.log(message);
+    log(...messages) {
+        this.constructor.log(...messages);
     }
 
-    static log(message) {
+    static log(...messages) {
         if (! this.isQuiet() && this.isVerbose()) {
             const now = Date.now();
             const elapsed = now - lastLogTime;
 
-            console.log(`[CLI][${elapsed} ms]`, message);
+            console.log(`[CLI][${elapsed} ms]`, ...messages);
 
             lastLogTime = now;
         }
     }
 
     static isVerbose() {
-        return argsInline.includes(" -v ") || argsInline.includes(" --verbose ");
+        return this.verbose || (argsInline.includes(" -v ") || argsInline.includes(" --verbose "));
     }
 
     static isQuiet() {
-        return argsInline.includes(" -q ") || argsInline.includes(" --quiet ");
+        return this.quiet || (argsInline.includes(" -q ") || argsInline.includes(" --quiet "));
     }
 
     async run() {

@@ -417,8 +417,8 @@ module.exports = class Command {
         return this;
     }
 
-    log (text) {
-        this.program.log(text)
+    log (...messages) {
+        this.program.log(...messages)
         return this;
     }
 
@@ -452,13 +452,18 @@ module.exports = class Command {
         return buffer;
     }
 
+    logout () {
+
+    }
+
     makeSIGINT () {
         this.rl.on('SIGINT', () => {
             this.outsFunction.map((out) => {
                 out();
             });
             this.log('Received SIGINT signal in command.');
-            process.exit();
+            const timeout = this.logout() || 0;
+            setTimeout(() => process.exit(0), timeout);
         });
     }
 
@@ -497,6 +502,8 @@ module.exports = class Command {
 
             await this.handle.bind(this)(...args);
         }
+
+        this.logout();
 
         const elapsed = Date.now() - this.program.startTime;
 

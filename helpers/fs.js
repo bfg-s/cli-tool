@@ -38,6 +38,14 @@ module.exports = class Fs {
         return normalizedPath.replace(/\/[^/]*\/?$/, '');
     }
 
+    filename(path) {
+        const normalizedPath = String(path).replace(/\\/g, '/');
+        if (os.platform() === 'win32') {
+            return normalizedPath.replace(/^.*[/\\]/g, '');
+        }
+        return normalizedPath.replace(/^.*[/\\]/g, '');
+    }
+
     read_all_dir (dir) {
         const stat = fs.statSync(dir);
         return stat.isDirectory() && ! stat.isSymbolicLink() ? (fs.readdirSync(dir).reduce((files, file) => {
@@ -128,7 +136,10 @@ module.exports = class Fs {
 
     set_json_contents (file, json) {
         if (Array.isArray(file)) file = path.join(...file);
-        return this.put_contents(file, JSON.stringify(json, null, 4));
+        let content = "[]";
+        try {content = JSON.stringify(json || [], null, 4)}
+        catch (e) {}
+        return this.put_contents(file, content);
     }
 
     update_json (file, key, value) {

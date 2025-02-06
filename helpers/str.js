@@ -1,4 +1,8 @@
 const md5 = require('md5');
+const pluralize = require('pluralize');
+const _ = require('lodash');
+const { transliterate, slugify } = require('transliteration');
+const net = require('net');
 
 module.exports = class Str {
 
@@ -102,9 +106,11 @@ module.exports = class Str {
      * @param first
      */
     camel (str, first = false) {
-        return str.replace(/\-|\_/g, ' ').replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
-            return first ? word.toUpperCase() : (index === 0 ? word.toLowerCase() : word.toUpperCase());
-        }).replace(/\s+/g, '');
+        let result = _.camelCase(str);
+        if (first) {
+            result = result.charAt(0).toUpperCase() + result.slice(1);
+        }
+        return result;
     }
 
     /**
@@ -112,16 +118,8 @@ module.exports = class Str {
      * @param str
      * @param separator
      */
-    snake (str, separator = '_') {
-        if(typeof separator == 'undefined') separator = '-';
-        let flip = separator === '-' ? '_' : '-';
-        str = str.replace(flip, separator);
-        return str.toLowerCase()
-            .replace(new RegExp('\:', 'g'), separator)
-            .replace(new RegExp('\\s', 'g'), separator)
-            .replace(new RegExp('\\s\\s', 'g'), separator)
-            .replace(new RegExp('['+separator+separator+']+', 'g'), separator)
-            .replace(new RegExp('[^a-z0-9' + separator + '\\s]', 'g'), '');
+    snake (str) {
+        return _.snakeCase(str);
     }
 
     /**
@@ -200,7 +198,7 @@ module.exports = class Str {
         }
 
         pattern = pattern
-            .replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}!|:\\#]', 'g'), '\\$&')
+            .replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}!|\\#]', 'g'), '\\$&')
             .replace(/\\\*/g, '.*');
 
         return (new RegExp('^' + pattern + '$', 'um')).test(text);
@@ -279,12 +277,35 @@ module.exports = class Str {
     }
 
     is_json (str) {
+        if (typeof str === 'object') {
+            return str;
+        }
         if (typeof str === 'string' && str) {
             try {
                 return JSON.parse(str);
             } catch (e) {
             }
         }
-        return new Error('Not a JSON');
+        return false;
+    }
+
+    singular (str) {
+        return pluralize.singular(str);
+    }
+
+    plural (str) {
+        return pluralize.plural(str);
+    }
+
+    transliterate (str) {
+        return transliterate(str);
+    }
+
+    slugify (str) {
+        return slugify(str);
+    }
+
+    is_ip (ip) {
+        return net.isIP(ip) > 0;
     }
 }

@@ -16,6 +16,7 @@ export interface Command {
         tmp_path: (...path: string[]) => string;
         tmp_file: () => string;
         dirname: (path: string) => string;
+        filename: (path: string) => string;
         read_all_dir: (dir: string) => any[];
         read_dir: (dir: string) => string[];
         stat: (path: string) => {};
@@ -72,7 +73,7 @@ export interface Command {
         dirname: (path: string) => string;
         ucfirst: (str: string) => string;
         camel: (str: string, first?: boolean) => string;
-        snake: (str: string, separator?: string) => string;
+        snake: (str: string) => string;
         translit: (str: string) => string;
         slug: (str: string, separator?: string) => string;
         query_get: (name: string) => any;
@@ -81,9 +82,15 @@ export interface Command {
         number_format: (num: number, decimals?: number, dec_point?: string, thousands_sep?: string) => string;
         http_build_query: (obj: object, num_prefix?: string, temp_key?: string) => string;
         is_json: (str: any) => boolean;
+        singular: (str: string) => string;
+        plural: (str: string) => string;
+        transliterate: (str: string) => string;
+        slugify: (str: string) => string;
+        is_ip: (ip: string) => boolean;
     };
     num: {
-        isNumber: (num: any) => boolean;
+        isNumber (num: any): boolean;
+        formatDuration (ms: number): string;
     };
     git: Git;
 
@@ -129,7 +136,13 @@ export interface Command {
     exit (message: string, code: number): void;
     write (data: Uint8Array|string): this;
     line (...data: any[]): this;
-    log (text: string, verbose: number): this;
+    log (...messages: any[]): this;
+}
+
+declare namespace NodeJS {
+    interface Process {
+        Command: Command;
+    }
 }
 
 declare interface Lodash {
