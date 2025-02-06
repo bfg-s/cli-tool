@@ -203,17 +203,23 @@ module.exports = class Command {
     }
 
     success (text) {
-        this.process(text.green).start().succeed();
+        if (! this.quiet) {
+            this.process(text.green).start().succeed();
+        }
         return this;
     }
 
     fail (text) {
-        this.process(text.red).start().fail();
+        if (! this.quiet) {
+            this.process(text.red).start().fail();
+        }
         return this;
     }
 
     warn (text) {
-        this.process(text.yellow).start().warn();
+        if (! this.quiet) {
+            this.process(text.yellow).start().warn();
+        }
         return this;
     }
 

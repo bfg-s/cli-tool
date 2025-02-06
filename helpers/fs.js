@@ -112,6 +112,8 @@ module.exports = class Fs {
 
     append_contents (paths, data, options = {}) {
         if (Array.isArray(paths)) paths = path.join(...paths);
+        let dir = this.dirname(paths);
+        if (!this.is_dir(dir)) this.mkdir(dir);
         return fs.appendFileSync(paths, data, options);
     }
 
