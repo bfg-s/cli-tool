@@ -77,6 +77,14 @@ module.exports = class Command {
         return this.commander.opts().quiet;
     }
 
+    set quiet(value) {
+        this.commander.opts().quiet = value;
+    }
+
+    set verbose(value) {
+        this.commander.opts().verbose = value;
+    }
+
     get commandDocumentation () {
         return '';
     }
