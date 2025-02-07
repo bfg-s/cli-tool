@@ -87,6 +87,7 @@ export interface Command {
         transliterate: (str: string) => string;
         slugify: (str: string) => string;
         is_ip: (ip: string) => boolean;
+        size_to_bytes: (sizeStr: string, defaultValue?: number) => number;
     };
     num: {
         isNumber (num: any): boolean;
@@ -490,6 +491,7 @@ declare interface Config {
     get (key: string, defaultValue?: any): any;
     set (key: string, value: any): void;
     has (key: string): boolean;
+    notHas (key: string): boolean;
     setToStore (store: string, key: string, value: any): any;
     deleteFromStore (store: string, key: string): Config;
 }

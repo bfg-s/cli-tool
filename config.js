@@ -34,11 +34,21 @@ module.exports = new class Config {
     get (key, defaultValue = null) {
         let value = obj.get(key, this.data);
         if (value !== undefined) {
-            const matches = /^\$\{[E|e][N|n][V|v]\.([a-zA-Z0-9_\-]+)(?:\s*([|]{2})\s*(.*)?)?}$/gm.exec(value);
-            if (matches) {
-                value = process.env[matches[1]] || matches[3] || null;
+            if (typeof value === 'object') {
+                return obj.each(value, (v, k) => {
+                    return this.get(`${key}.${k}`, v);
+                });
+            } else {
+                const matches = /^\$\{[E|e][N|n][V|v]\.([a-zA-Z0-9_\-]+)(?:\s*([|]{2})\s*(.*)?)?}$/gm.exec(value);
+                if (matches) {
+                    value = process.env[matches[1]] || matches[3] || null;
+                    if (value === 'null') value = null;
+                    else if (value === 'true') value = true;
+                    else if (value === 'false') value = false;
+                    else if (! isNaN(value)) value = Number(value);
+                }
+                return value;
             }
-            return value;
         }
         return typeof defaultValue === 'function'
             ? defaultValue(this, key)
@@ -52,6 +62,10 @@ module.exports = new class Config {
 
     has (key) {
         return obj.has(key, this.data);
+    }
+
+    notHas (key) {
+        return ! this.has(key);
     }
 
     delete (key) {

@@ -308,4 +308,21 @@ module.exports = class Str {
     is_ip (ip) {
         return net.isIP(ip) > 0;
     }
+
+    size_to_bytes(sizeStr, defaultValue = 0) {
+        if (typeof sizeStr === 'number') {
+            return sizeStr;
+        }
+        const units = { B: 1, K: 1024, M: 1024 ** 2, G: 1024 ** 3, T: 1024 ** 4 };
+        const match = /^(\d+(?:\.\d+)?)([BKMGTP]?)$/i.exec(sizeStr.trim());
+
+        if (!match) {
+            return defaultValue;
+        }
+
+        const [ , value, unit ] = match;
+        const bytes = parseFloat(value) * (units[unit.toUpperCase()] || 1);
+
+        return Math.round(bytes);
+    }
 }
