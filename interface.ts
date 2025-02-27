@@ -41,6 +41,7 @@ export interface Command {
         filter: (obj: any, eq: any) => any[];
         find: (obj: any, eq: any) => any;
         get_methods: (obj: any) => any[];
+        get_class_methods: (instance: any) => any[];
         get_element_attrs: (el: any) => object;
         observer: (target: any, events: any, revocable: boolean) => any;
         has: (str: string, obj: any) => any;

@@ -65,6 +65,7 @@ module.exports = class Find extends process.Command {
         } else {
             this.line(JSON.stringify({
                 result,
+                dir: this.fs.base_path(),
                 ...(this.arguments.valueInFiles ? {matches: this.matches} : {}),
                 files: result.length,
                 time,
@@ -84,7 +85,7 @@ module.exports = class Find extends process.Command {
             ) {
                 this.fileLine(file, searchInFile);
                 return {
-                    dir, file, relativePath
+                    file
                 };
             }
             return false;
@@ -107,35 +108,34 @@ module.exports = class Find extends process.Command {
                 } else if (this.options.file) {
                     searchInFile = this.quote(this.options.file);
                 }
+                let linesCount = 1;
                 return await this.readFileContentStream(file, (content) => {
 
                     if (this.str.is(value, content)) {
-
-                        let lenFileLine = this.fileLine(file, searchInFile);
+                        const first = `[#${++this.fileNums}]`;
                         const findRows = [];
-                        content.split('\n').forEach((line, n) => {
-                            line = line.trim();
+                        const lines = content.split('\n');
+                        lines.forEach((line, n) => {
                             if (this.str.is(value, line)) {
-                                n++;
                                 if (! this.options.json) {
-                                    const len = String(n).length;
-                                    let minLen = 6;
-                                    if (len > minLen) minLen = 12;
-                                    if (len > minLen) minLen = 18;
-                                    if (len > minLen) minLen = 24;
-                                    const spacesLen = minLen - len;
-                                    const spaces = ` `.repeat(spacesLen > 0 ? spacesLen : 1);
-                                    const num = `[:${n}]`;
-                                    this.line(num.green + spaces + `${this.replaceToColor(line, searchInContent, true)}`);
+                                    const terminalWidth = process.stdout.columns || 80;
+                                    this.line(first.green, `${file}:${linesCount}`);
+                                    if (lines[n-1] && String(lines[n-1]).length <= (terminalWidth - `${linesCount-1}:`.length - 1) && ! this.str.is(value, lines[n-1])) {
+                                        this.line(`${linesCount-1}|`, `${lines[n-1]}`);
+                                    }
+                                    const lineNum = `${linesCount}|`;
+                                    if (searchInContent) line = this.trimTextToTerminalWidth(line, searchInContent, lineNum.length - 4);
+                                    this.line(lineNum.green, `${this.replaceToColor(line, searchInContent, true)}`);
+                                    if (lines[n+1] && String(lines[n+1]).length <= (terminalWidth - `${linesCount+1}:`.length - 1) && ! this.str.is(value, lines[n+1])) {
+                                        this.line(`${linesCount+1}|`, `${lines[n+1]}`);
+                                    }
                                 } else {
                                     this.replaceToColor(line, searchInContent, true);
                                 }
                                 findRows.push({line: n, content: line});
                             }
+                            linesCount++;
                         });
-                        if (! this.options.json) {
-                            this.line('-'.repeat(lenFileLine).blue);
-                        }
                         return findRows.length ? {
                             file, lines: findRows
                         } : false;
@@ -144,6 +144,42 @@ module.exports = class Find extends process.Command {
                 });
             }
         });
+    }
+
+    trimTextToTerminalWidth(text, centerWord, correct = 0) {
+        centerWord = centerWord.split('|')[0];
+        const terminalWidth = (process.stdout.columns || 80) - correct;
+        const ellipsis = '…';
+
+        // Если текст уже вмещается — просто возвращаем его
+        if (text.length <= terminalWidth) {
+            return text;
+        }
+
+        const centerIndex = text.indexOf(centerWord);
+        if (centerIndex === -1) {
+            throw new Error(`Слово "${centerWord}" не найдено в строке.`);
+        }
+
+        const halfWidth = Math.floor(terminalWidth / 2);
+        const leftPart = text.slice(0, centerIndex);
+        const rightPart = text.slice(centerIndex + centerWord.length);
+
+        let leftTrimmed = leftPart;
+        let rightTrimmed = rightPart;
+
+        // Сколько символов остаётся на боковые части после учёта слова и троеточий
+        const availableSpace = terminalWidth - centerWord.length;
+        const halfAvailable = Math.floor(availableSpace / 2);
+
+        if (leftPart.length > halfAvailable) {
+            leftTrimmed = ellipsis + leftPart.slice(-halfAvailable + 1);
+        }
+        if (rightPart.length > halfAvailable) {
+            rightTrimmed = rightPart.slice(0, halfAvailable - 1) + ellipsis;
+        }
+
+        return leftTrimmed + centerWord + rightTrimmed;
     }
 
     async read_all_dir_promise(dir, cb) {

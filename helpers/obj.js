@@ -31,6 +31,11 @@ module.exports = class Obj {
         return res;
     }
 
+    get_class_methods (instance) {
+        return  Object.getOwnPropertyNames(Object.getPrototypeOf(instance))
+            .filter(name => name !== 'constructor' && typeof instance[name] === 'function');
+    }
+
     get_element_attrs (el) {
         let result = {};
         if (el) {
