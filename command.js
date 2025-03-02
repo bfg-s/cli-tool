@@ -471,13 +471,17 @@ module.exports = class Command {
     }
 
     makeSIGINT () {
-        this.rl.on('SIGINT', () => {
-            this.outsFunction.map((out) => {
-                out();
-            });
+        this.rl.on('SIGINT', async () => {
+            for (const out of this.outsFunction) {
+                out.name === 'AsyncFunction'
+                    ? await out()
+                    : out();
+            }
             this.log('Received SIGINT signal in command.');
-            const timeout = this.logout() || 0;
-            setTimeout(() => process.exit(0), timeout);
+            const code = this.logout.name === 'AsyncFunction'
+                ? await this.logout()
+                : this.logout();
+            process.exit(code || 0);
         });
     }
 

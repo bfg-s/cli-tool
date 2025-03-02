@@ -43,7 +43,7 @@ module.exports = class Find extends process.Command {
 
         if (this.arguments.valueInFiles) {
             result = await this.findInFiles(this.arguments.valueInFiles);
-            if (! this.options.json) {
+            if (! this.options.json && result.length) {
                 this.line(`Matches: `.green + this.matches);
             }
         } else {
@@ -123,8 +123,8 @@ module.exports = class Find extends process.Command {
                                     if (lines[n-1] && String(lines[n-1]).length <= (terminalWidth - `${linesCount-1}:`.length - 1) && ! this.str.is(value, lines[n-1])) {
                                         this.line(`${linesCount-1}|`, `${lines[n-1]}`);
                                     }
-                                    const lineNum = `${linesCount}|`;
-                                    if (searchInContent) line = this.trimTextToTerminalWidth(line, searchInContent, lineNum.length - 4);
+                                    const lineNum = `${linesCount}>`;
+                                    if (searchInContent) line = this.trimTextToTerminalWidth(line, searchInContent, lineNum.length+1);
                                     this.line(lineNum.green, `${this.replaceToColor(line, searchInContent, true)}`);
                                     if (lines[n+1] && String(lines[n+1]).length <= (terminalWidth - `${linesCount+1}:`.length - 1) && ! this.str.is(value, lines[n+1])) {
                                         this.line(`${linesCount+1}|`, `${lines[n+1]}`);
