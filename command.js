@@ -473,14 +473,14 @@ module.exports = class Command {
     makeSIGINT () {
         this.rl.on('SIGINT', async () => {
             for (const out of this.outsFunction) {
-                out.constructor.name === 'AsyncFunction' || out.name === 'AsyncFunction'
+                out.constructor.name === 'AsyncFunction'
                     ? await out()
                     : out();
             }
-            this.log('Received SIGINT signal in command.');
-            const code = this.logout.constructor.name === 'AsyncFunction' || this.logout.name === 'AsyncFunction'
+            const code = this.logout.constructor.name === 'AsyncFunction'
                 ? await this.logout()
                 : this.logout();
+            this.log('Received SIGINT signal in command.');
             process.exit(code || 0);
         });
     }
